@@ -9,12 +9,13 @@ export class BatterySlot{
 
     constructor(msg:any){
         let dateTimeformater=DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss');
-        this.readTimeStamp=LocalDateTime.parse(msg.payload.uploadTime,dateTimeformater).plusHours(1);
+        //this.readTimeStamp=LocalDateTime.parse(msg.payload.uploadTime,dateTimeformater).plusHours(1);
+        this.readTimeStamp=LocalDateTime.parse(msg.readTimeStamp.toString());
         //this.length=LocalDateTime.now().until(readTimeStamp,ChronoUnit.SECONDS)*1000;
-        this.length=null;
-        this.producedInWatsH=msg.payload.acpower;
-        this.feededInWatsH=msg.payload.feedinpower;
-        this.consumedInWatsH=this.producedInWatsH-this.feededInWatsH;
+        this.length=msg.length;
+        this.producedInWatsH=msg.producedInWatsH;
+        this.feededInWatsH=msg.feededInWatsH;
+        this.consumedInWatsH=msg.consumedInWatsH;
     }
 
     calcLenght(b:BatterySlot){
@@ -24,7 +25,7 @@ export class BatterySlot{
     get(){
         return {
             readTimeStamp:this.readTimeStamp,
-            length:this.length,
+            length:this.getLength(),
             producedInWatsH:this.producedInWatsH,
             feededInWatsH:this.feededInWatsH,
             consumedInWatsH:this.consumedInWatsH

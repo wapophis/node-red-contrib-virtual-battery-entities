@@ -1,10 +1,13 @@
+import { BalanceNetoHorario } from "./BalanceNetoHorario";
+import { BatteryBalanceCounter } from "./BatteryBalance";
+import { PricesTables, PricesTablesMapper } from "./PriceTables";
 import { VirtualBattery, VirtualBatteryConfig } from "./VirtualBattery";
 
-export abstract class NodeBattery{
+export abstract class NodeBattery<T extends BatteryBalanceCounter>{
     node:any;
     nodeConfig:any;
     config:VirtualBatteryConfig;
-    battery:VirtualBattery;
+    battery:VirtualBattery<T>;
     nodeContext:any;
 
     pendingArray:Array<any>=[];
@@ -14,20 +17,24 @@ export abstract class NodeBattery{
         this.nodeConfig=nodeConfig;
         this.config=new VirtualBatteryConfig(nodeConfig.wastePercent,null);
         this.battery=new VirtualBattery(this.config);
+        this.nodeContext=node.context();
     }
 
     setConfig(config:VirtualBatteryConfig){
         this.config=config;
     }
 
-    abstract init():VirtualBattery;
+    abstract init():VirtualBattery<T>;
 
     abstract onClose():boolean;
 
-    onInput(msg:any,send:any,done:any):VirtualBattery{
+    onInput(msg:any,send:any,done:any):VirtualBattery<T>{
         if ("pricesTables" in msg.payload){
             this.node.log( " CARGANDO CACHE");
-            this.config.setPricesTables(msg.payload.pricesTables);
+            
+            let pricesTables:PricesTables=new PricesTables(PricesTablesMapper.unMarshallPmh(msg.payload.pricesTables.pricesToSell),
+            PricesTablesMapper.unMarshallPvpC(msg.payload.pricesTables.pricesToBuy));
+            this.config.setPricesTables(pricesTables);
             this.node.status({fill:"green",shape:"dot",text:"Prices cache loaded"});
         }else{
             if(!this.config.cacheIsReady()){
@@ -41,13 +48,13 @@ export abstract class NodeBattery{
 
             if(this.pendingArray.length>0){
                 this.pendingArray.forEach((item,index,array)=>{
-                    processBalanceNetoHorario(node,nodeContext,battery,item,batteryBalance);
+                    this.processBalanceNetoHorario(new BalanceNetoHorario(item.payload));
                 });
 
                 this.pendingArray=[];
             }
 
-            processBalanceNetoHorario(node,nodeContext,battery,msg,batteryBalance);
+            this.processBalanceNetoHorario(new BalanceNetoHorario(msg.payload));
         }
 
         return this.battery;
@@ -55,6 +62,6 @@ export abstract class NodeBattery{
 
     abstract validateConfig():boolean;
 
-    abstract processBalanceNetoHorario():void;
+    abstract processBalanceNetoHorario(bHorario:BalanceNetoHorario):void;
 
 }

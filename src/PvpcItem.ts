@@ -8,6 +8,7 @@ export class PvpcItemSerialized{
     PCB:string="";
     TEUPCB:string="";
 
+
     getStartHour():number{
         return Number.parseInt(this.hora.split("-")[0]);
     }
@@ -30,7 +31,10 @@ export class PvpcItemSerialized{
 
 export class PvpcItem{
     serItem:PvpcItemSerialized;
-    interval:Interval;
+    private interval:Interval;
+    private price:number|null=null;
+    private peaje:number|null=null;
+
     constructor(fromEsios:PvpcItemSerialized){
         {
             this.serItem=fromEsios;
@@ -40,20 +44,65 @@ export class PvpcItem{
     }
 
     getInterval():Interval{
-        let startHour=this.serItem.getStartHour();
-        let startDateTime=LocalDate.parse(this.serItem.dia,DateTimeFormatter.ofPattern("dd/MM/yyyy")).atTime(startHour,0,0,0);
-        let endDateTime=startDateTime.plusHours(1);
-        let startInstant=startDateTime.atZone(ZoneId.of("Europe/Madrid")).toInstant();
-        let endInstant=endDateTime.atZone(ZoneId.of("Europe/Madrid")).toInstant();
-        return Interval.of(startInstant,endInstant);
+        if(this.interval===null){
+            let startHour=this.serItem.getStartHour();
+            let startDateTime=LocalDate.parse(this.serItem.dia,DateTimeFormatter.ofPattern("dd/MM/yyyy")).atTime(startHour,0,0,0);
+            let endDateTime=startDateTime.plusHours(1);
+            let startInstant=startDateTime.atZone(ZoneId.of("Europe/Madrid")).toInstant();
+            let endInstant=endDateTime.atZone(ZoneId.of("Europe/Madrid")).toInstant();
+            this.interval=Interval.of(startInstant,endInstant);
+        }
+        
+        return this.interval;
     }
 
     getPrice(){
-        return  this.serItem.getPrice();
+        if(this.price===null){
+            this.price=this.serItem.getPrice();
+        }
+
+        return  this.price;;
     }
 
     getPeaje(){
-        return this.serItem.getTerminoFijo();
+        if(this.peaje===null){
+            this.peaje=this.serItem.getTerminoFijo();
+        }
+        return this.peaje;
+    }
+
+    static of(pvpcItem:any):PvpcItem{
+        let oVal:PvpcItem=new PvpcItem(new PvpcItemSerialized());
+
+        if(pvpcItem["interval"]!==undefined){
+            oVal.interval=Interval.parse(pvpcItem.interval.toString());
+        }
+
+        if(pvpcItem["price"]!==undefined){
+            oVal.price=pvpcItem.price;
+        }else{
+            if(pvpcItem["PCB"]!==undefined){
+                oVal.price=parseFloat(pvpcItem.PCB.toString().replace(/,/g, '.'));
+            }
+        }
+
+        if(pvpcItem["peaje"]!==undefined){
+            oVal.peaje=pvpcItem.peaje;
+        }else{
+            if(pvpcItem["TEUPCB"]!==undefined){
+                oVal.peaje=parseFloat(pvpcItem.TEUPCB.toString().replace(/,/g, '.'));
+            }
+        }
+
+        return oVal;
+    }
+
+    get():any{
+        return{
+            interval:this.getInterval().toString,
+            price:this.getPrice(),
+            peaje:this.getPeaje()
+        }
     }
     
 

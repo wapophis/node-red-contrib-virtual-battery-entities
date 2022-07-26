@@ -7,7 +7,6 @@ export class BalanceNetoHorario{
     startTime:LocalDateTime;
     endTime:LocalDateTime;
     batterySlots: BatterySlot[];
-    readTimeStamp: LocalDateTime|null;
     length: number|null;
     consolidable:boolean;
 
@@ -17,14 +16,19 @@ export class BalanceNetoHorario{
         this.startTime=LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
         this.endTime=this.startTime.plusHours(1);
         this.batterySlots=new Array();
-        this.readTimeStamp=null;
         this.length=null;
         this.consolidable=false;
         }else{
-            this.startTime=LocalDateTime.parse(msg.startTime);
-            this.endTime=LocalDateTime.parse(msg.endTime);
-            this.batterySlots=msg.batterySlots;
-            this.readTimeStamp=msg.readTimeStamp;
+            this.startTime=LocalDateTime.parse(msg.startTime.toString());
+            this.endTime=LocalDateTime.parse(msg.endTime.toString());
+            this.batterySlots=[];
+            try{
+            msg.batterySlots.forEach((item:any)=>{
+                this.batterySlots.push(new BatterySlot(item));
+            });
+        }catch(e){
+            console.log(e);
+        }
             this.length=msg.length;
             this.consolidable=msg.isConsolidable;
         }

@@ -1,18 +1,23 @@
 {
-  "name": "red-contrib-virtual-battery-entities",
+  "name": "@virtualbat/entities",
   "version": "1.0.0",
   "description": "Virtual Battery main entities",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Wapophis",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.7.4"
   },
   "dependencies": {
     "@js-joda/core": "^5.2.0",
-    "@js-joda/extra": "^0.8.0"
+    "@js-joda/extra": "^0.8.0",
+    "@js-joda/timezone": "^2.12.0"
   }
 }
