@@ -4,10 +4,14 @@ import { Instant } from "@js-joda/core";
 import { ZoneId } from "@js-joda/core";
 import { PmhItem, PmhItemSerialized } from "./PmhItem";
 import { PvpcItem, PvpcItemSerialized} from "./PvpcItem";
+import { TerminoEnergiaItem } from "./TerminoEnergiaItem";
+import { PriceIntervalItem } from "./PriceIntervalItem";
 
 export class PricesTables{
     pricesToSell:Map<Interval,PmhItem>=new Map();
     pricesToBuy:Map<Interval,PvpcItem>=new Map();
+    energyTerm:Map<Interval,PriceIntervalItem>=new Map();
+    potenciaTerm:Map<Interval,PriceIntervalItem>=new Map();
 
     constructor(pricesToSell:Map<Interval,PmhItem>,pricesToBuy:Map<Interval,PvpcItem>){
         this.pricesToSell=pricesToSell;
@@ -37,6 +41,14 @@ export class PricesTables{
        return oVal;
     }
 
+    setEnergyTerm(energyTerms:Map<Interval,PriceIntervalItem>){
+        this.energyTerm=energyTerms;
+    }
+
+    setPotenciaTerm(potenciaTerms:Map<Interval,PriceIntervalItem>){
+        this.energyTerm=potenciaTerms;
+    }
+
     searchInSell(date:LocalDateTime):PmhItem{
         let oVal:PmhItem=new PmhItem();
         this.pricesToSell.forEach((item:PmhItem,key:Interval,map:Map<Interval,PmhItem>)=>{
@@ -49,6 +61,27 @@ export class PricesTables{
                 }
         });
 
+       return oVal;
+    }
+
+    searchInTerminoEnergia(date:LocalDateTime):PriceIntervalItem{
+        return PricesTables.searchPriceInIntervalMap(this.energyTerm,date);
+    }
+
+    searchInTerminoPotencia(date:LocalDateTime):PriceIntervalItem{
+        return PricesTables.searchPriceInIntervalMap(this.potenciaTerm,date);
+    }
+
+    static searchPriceInIntervalMap(map:Map<Interval,PriceIntervalItem>,date:LocalDateTime):PriceIntervalItem{
+        let oVal:PriceIntervalItem=new PriceIntervalItem();
+        map.forEach((item:PriceIntervalItem,key:Interval,map:Map<Interval,PriceIntervalItem>)=>{
+            if( Interval.of(
+                Instant.parse(item.getInterval().start().toString())
+                ,Instant.parse(item.getInterval().end().toString()))
+                .contains(Instant.parse(date.atZone(ZoneId.of("Europe/Madrid")).toInstant().toString()))){
+                    oVal=item;
+                }
+        });
        return oVal;
     }
 }
