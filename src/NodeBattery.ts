@@ -30,10 +30,10 @@ export abstract class NodeBattery<T extends BatteryBalanceCounter>{
 
     onInput(msg:any,send:any,done:any):VirtualBattery<T>{
         if ("pricesTables" in msg.payload){
-            this.node.log( " CARGANDO CACHE");
-            
-            let pricesTables:PricesTables=new PricesTables(PricesTablesMapper.unMarshallPmh(msg.payload.pricesTables.pricesToSell),
-            PricesTablesMapper.unMarshallPvpC(msg.payload.pricesTables.pricesToBuy));
+            this.node.log( " CARGANDO CACHE");            
+            let pricesTables:PricesTables=new PricesTables();
+            pricesTables.set(msg.payload.pricesTables)
+
             this.config.setPricesTables(pricesTables);
             this.node.status({fill:"green",shape:"dot",text:"Prices cache loaded"});
         }else{

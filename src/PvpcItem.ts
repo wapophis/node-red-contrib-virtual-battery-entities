@@ -1,7 +1,8 @@
 import { DateTimeFormatter, LocalDate, ZoneId } from "@js-joda/core";
 import { Interval } from "@js-joda/extra";
-
-
+/*
+@Deprecated
+*/
 export class PvpcItemSerialized{
     dia:string="";
     hora:string="";
@@ -24,11 +25,21 @@ export class PvpcItemSerialized{
     getTerminoFijo():number{
         return  parseFloat(this.TEUPCB.replace(/,/g, '.'));
     }
+    static of(payload:any):PvpcItemSerialized{
+        let oval:PvpcItemSerialized=new PvpcItemSerialized();
+        oval.dia=payload.Dia;
+        oval.hora=payload.Hora;
+        oval.PCB=payload.PCB;
+        oval.TEUPCB=payload.TEUPCB;
+        return oval;
+    }
 
 }
 
 
-
+/*
+@Deprecated
+*/
 export class PvpcItem{
     serItem:PvpcItemSerialized;
     private interval:Interval;
@@ -44,7 +55,7 @@ export class PvpcItem{
     }
 
     getInterval():Interval{
-        if(this.interval===null){
+        if(this.interval===null || this.interval===undefined){
             let startHour=this.serItem.getStartHour();
             let startDateTime=LocalDate.parse(this.serItem.dia,DateTimeFormatter.ofPattern("dd/MM/yyyy")).atTime(startHour,0,0,0);
             let endDateTime=startDateTime.plusHours(1);

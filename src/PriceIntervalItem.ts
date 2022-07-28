@@ -30,6 +30,13 @@ export class PriceIntervalItem{
         return this;
     }
 
+    get():any{
+        return{
+            interval:this.getInterval().toString(),
+            price:this.getPrice()            
+        }
+    }
+
 
     static searchPriceInIntervalMap(map:Map<Interval,PriceIntervalItem>,date:LocalDateTime):PriceIntervalItem|null{
         let oVal:PriceIntervalItem=new PriceIntervalItem();

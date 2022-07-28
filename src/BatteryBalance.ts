@@ -8,8 +8,8 @@ export class BatteryBalanceCounter{
     energyImported: number;
     energyFeeded: number;    
     batteryLoad: number;
-    buyPrice: PvpcItem|null=null;
-    sellPrice: PmhItem|null=null;
+    buyPrice: PriceIntervalItem|null=null;
+    sellPrice: PriceIntervalItem|null=null;
 
     terminoEnergiaSum:number=0;
     terminoEnergiaPrice:PriceIntervalItem|null=null;
@@ -55,7 +55,7 @@ export class BatteryBalanceCounter{
             }
     }
 
-    setPrices(buyPrice:PvpcItem,sellPrice:PmhItem){
+    setPrices(buyPrice:PriceIntervalItem,sellPrice:PriceIntervalItem|null){
         this.buyPrice=buyPrice;
         this.sellPrice=sellPrice;
     }
