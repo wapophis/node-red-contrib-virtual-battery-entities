@@ -4,7 +4,6 @@ import { Instant } from "@js-joda/core";
 import { ZoneId } from "@js-joda/core";
 import { PmhItem, PmhItemSerialized } from "./PmhItem";
 import { PvpcItem, PvpcItemSerialized} from "./PvpcItem";
-import { TerminoEnergiaItem } from "./TerminoEnergiaItem";
 import { PriceIntervalItem } from "./PriceIntervalItem";
 
 export class PricesTables{
@@ -64,26 +63,15 @@ export class PricesTables{
        return oVal;
     }
 
-    searchInTerminoEnergia(date:LocalDateTime):PriceIntervalItem{
-        return PricesTables.searchPriceInIntervalMap(this.energyTerm,date);
+    searchInTerminoEnergia(date:LocalDateTime):PriceIntervalItem|null{
+        return PriceIntervalItem.searchPriceInIntervalMap(this.energyTerm,date);
     }
 
-    searchInTerminoPotencia(date:LocalDateTime):PriceIntervalItem{
-        return PricesTables.searchPriceInIntervalMap(this.potenciaTerm,date);
+    searchInTerminoPotencia(date:LocalDateTime):PriceIntervalItem|null{
+        return PriceIntervalItem.searchPriceInIntervalMap(this.potenciaTerm,date);
     }
 
-    static searchPriceInIntervalMap(map:Map<Interval,PriceIntervalItem>,date:LocalDateTime):PriceIntervalItem{
-        let oVal:PriceIntervalItem=new PriceIntervalItem();
-        map.forEach((item:PriceIntervalItem,key:Interval,map:Map<Interval,PriceIntervalItem>)=>{
-            if( Interval.of(
-                Instant.parse(item.getInterval().start().toString())
-                ,Instant.parse(item.getInterval().end().toString()))
-                .contains(Instant.parse(date.atZone(ZoneId.of("Europe/Madrid")).toInstant().toString()))){
-                    oVal=item;
-                }
-        });
-       return oVal;
-    }
+   
 }
 
 

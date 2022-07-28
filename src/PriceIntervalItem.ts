@@ -1,4 +1,4 @@
-import { IllegalArgumentException } from "@js-joda/core";
+import { IllegalArgumentException, Instant, LocalDateTime, ZoneId } from "@js-joda/core";
 import { Interval } from "@js-joda/extra";
 
 export class PriceIntervalItem{
@@ -28,6 +28,20 @@ export class PriceIntervalItem{
     setPrice(price:number):PriceIntervalItem{
         this.price=price;
         return this;
+    }
+
+
+    static searchPriceInIntervalMap(map:Map<Interval,PriceIntervalItem>,date:LocalDateTime):PriceIntervalItem|null{
+        let oVal:PriceIntervalItem=new PriceIntervalItem();
+        map.forEach((item:PriceIntervalItem,key:Interval,map:Map<Interval,PriceIntervalItem>)=>{
+            if( Interval.of(
+                Instant.parse(item.getInterval().start().toString())
+                ,Instant.parse(item.getInterval().end().toString()))
+                .contains(Instant.parse(date.atZone(ZoneId.of("Europe/Madrid")).toInstant().toString()))){
+                    oVal=item;
+                }
+        });
+       return oVal;
     }
 
 
