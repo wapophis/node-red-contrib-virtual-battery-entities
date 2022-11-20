@@ -15,13 +15,14 @@ export abstract class NodeBattery<T extends BatteryBalanceCounter>{
     constructor(node:any,nodeConfig:any){
         this.node=node;
         this.nodeConfig=nodeConfig;
-        this.config=new VirtualBatteryConfig(nodeConfig.wastePercent,null);
+        this.config=new VirtualBatteryConfig(null);
         this.battery=new VirtualBattery(this.config);
         this.nodeContext=node.context();
     }
 
     setConfig(config:VirtualBatteryConfig){
         this.config=config;
+        this.battery.config=this.config;
     }
 
     abstract init():VirtualBattery<T>;

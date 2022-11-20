@@ -76,6 +76,7 @@ export class BalanceNetoHorario{
             count+=item.feededInWatsH/slotsInHour;
             if(isNaN(count)){
                 console.log(item);
+                return 0;
             }
         });
         return count;
@@ -109,9 +110,24 @@ export class BalanceNetoHorario{
             }
         }
     }
+    
+    getEndTime():LocalDateTime {
+        return LocalDateTime.parse(this.endTime.toString());
+    }
+
+    getStartTime():LocalDateTime{
+        return LocalDateTime.parse(this.startTime.toString());
+    }
+
 
     isConsolidable(){
         return this.consolidable;
+    }
+
+    of(input:any,type:string){
+        if(type="e-distribucion"){
+            
+        }
     }
     
     

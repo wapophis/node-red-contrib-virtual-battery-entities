@@ -1,7 +1,6 @@
 import { BalanceNetoHorario } from "./BalanceNetoHorario";
-import { PmhItem, PmhItemSerialized } from "./PmhItem";
 import { PriceIntervalItem } from "./PriceIntervalItem";
-import { PvpcItem, PvpcItemSerialized } from "./PvpcItem";
+
 
 
 export class BatteryBalanceCounter{
@@ -11,11 +10,12 @@ export class BatteryBalanceCounter{
     buyPrice: PriceIntervalItem|null=null;
     sellPrice: PriceIntervalItem|null=null;
 
+    /*
     terminoEnergiaSum:number=0;
     terminoEnergiaPrice:PriceIntervalItem|null=null;
     terminoPotenciaSum:number=0;
     terminoPotenciaPrice:PriceIntervalItem|null=null;
-
+    */
     constructor(imported:number,feeded:number,load:number){
         this.energyImported=imported;
         this.energyFeeded=feeded;
@@ -42,27 +42,27 @@ export class BatteryBalanceCounter{
             else{
                 throw Error("No sellPrice settled");
             }
-            if(this.terminoEnergiaPrice!==null){
+    /*        if(this.terminoEnergiaPrice!==null){
                 this.terminoEnergiaSum+=balanceNeto.getFeeded()*(this.terminoEnergiaPrice.getPrice()/1000000);
-            }
+            }*/
 
         }
     }
 
-    addTerminoPotenciaIncrement(potenciaInTramo:number){
-            if(this.terminoPotenciaPrice!==null){
-                this.terminoPotenciaSum+=potenciaInTramo*(this.terminoPotenciaPrice.getPrice()/1000000);
-            }
-    }
+    // addTerminoPotenciaIncrement(potenciaInTramo:number){
+    //         if(this.terminoPotenciaPrice!==null){
+    //             this.terminoPotenciaSum+=potenciaInTramo*(this.terminoPotenciaPrice.getPrice()/1000000);
+    //         }
+    // }
 
     setPrices(buyPrice:PriceIntervalItem,sellPrice:PriceIntervalItem|null){
         this.buyPrice=buyPrice;
         this.sellPrice=sellPrice;
     }
-    setTerms(energia:PriceIntervalItem|null,potencia:PriceIntervalItem|null){
-        this.terminoEnergiaPrice=energia;
-        this.terminoPotenciaPrice=potencia;
-    }
+    // setTerms(energia:PriceIntervalItem|null,potencia:PriceIntervalItem|null){
+    //     this.terminoEnergiaPrice=energia;
+    //     this.terminoPotenciaPrice=potencia;
+    // }
 
 
 
@@ -73,44 +73,10 @@ export class BatteryBalanceCounter{
             batteryLoad:this.batteryLoad,
             buyPrice:this.buyPrice,
             sellPrice:this.sellPrice,
-            terminoEnergia:this.terminoEnergiaSum,
-            terminoPotencia:this.terminoPotenciaSum
+            // terminoEnergia:this.terminoEnergiaSum,
+            // terminoPotencia:this.terminoPotenciaSum
         };
     }
 }
 
 
-export class ProximanEnergiaBatteryBalance extends BatteryBalanceCounter{
-    energyLossed: number;
-    private wastePercent:number|null=null;
-    
-    constructor(imported:number,feeded:number,losed:number,load:number,wastePercent:number){
-        super(imported,feeded,load);
-        this.energyLossed=losed;
-        this.wastePercent=wastePercent;
-    }
-
-    getWastePercent():number{
-        if(this.wastePercent===null){
-            this.wastePercent=0;
-        }
-        return this.wastePercent;
-    }
-
-    addBalaceNeto(balanceNeto:BalanceNetoHorario){
-        super.addBalaceNeto(balanceNeto);
-        if(this.sellPrice!==null){
-            this.energyLossed+=((this.getWastePercent()*this.energyFeeded)/100)*(this.sellPrice.getPrice()/1000000);
-        }else{
-            throw Error("No sellPrice settled");
-        }
-    }
-
-
-    get():any{
-        let oVal:Record<string,any>=super.get();
-        oVal.energyLossed=this.energyLossed;
-        return oVal;
-    }
-    
-};
