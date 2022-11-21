@@ -29,6 +29,7 @@ export class BatteryBalanceCounter{
     addBalaceNeto(balanceNeto:BalanceNetoHorario){
         if(balanceNeto.getFeeded()<0){
             this.energyImported+=balanceNeto.getFeeded();
+            this.energyFeeded===undefined?this.energyFeeded=0:false;
             if(this.buyPrice!==null){
                 this.batteryLoad+=balanceNeto.getFeeded()*(this.buyPrice.getPrice()/1000000);
             }else{
@@ -36,6 +37,7 @@ export class BatteryBalanceCounter{
             }
         }else{
             this.energyFeeded+=balanceNeto.getFeeded();
+            this.energyImported===undefined?this.energyImported=0:false;
             if(this.sellPrice!==null){
                 this.batteryLoad+=balanceNeto.getFeeded()*(this.sellPrice.getPrice()/1000000);
             }
@@ -68,8 +70,8 @@ export class BatteryBalanceCounter{
 
     get():any{
         return {
-            energyImported:this.energyImported,
-            energyFeeded:this.energyFeeded,
+            energyImported:this.energyImported===undefined || this.energyImported===NaN?0:this.energyImported,
+            energyFeeded:this.energyFeeded===undefined || this.energyFeeded===NaN?0:this.energyFeeded,
             batteryLoad:this.batteryLoad,
             buyPrice:this.buyPrice,
             sellPrice:this.sellPrice,

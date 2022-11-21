@@ -1,6 +1,6 @@
 {
   "name": "@virtualbat/entities",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Virtual Battery main entities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
