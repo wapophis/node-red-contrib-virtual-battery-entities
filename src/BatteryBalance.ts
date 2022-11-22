@@ -20,6 +20,7 @@ export class BatteryBalanceCounter{
         this.energyImported=imported;
         this.energyFeeded=feeded;
         this.batteryLoad=load;
+        console.log(JSON.stringify({class:"BatteryBalanceCouter",method:"Constructor",args:{imported:imported,feeded:feeded,load:load}}));
     }
 
     /**
@@ -27,6 +28,7 @@ export class BatteryBalanceCounter{
      * @param balanceNeto TODO IMPLEMENTAR TIPO
      */
     addBalaceNeto(balanceNeto:BalanceNetoHorario){
+        console.log(JSON.stringify({class:"BatteryBalanceCouter",method:"addBalaceNeto",args:arguments}));
         if(balanceNeto.getFeeded()<0){
             this.energyImported+=balanceNeto.getFeeded();
             this.energyFeeded===undefined?this.energyFeeded=0:false;
@@ -47,6 +49,7 @@ export class BatteryBalanceCounter{
     /*        if(this.terminoEnergiaPrice!==null){
                 this.terminoEnergiaSum+=balanceNeto.getFeeded()*(this.terminoEnergiaPrice.getPrice()/1000000);
             }*/
+            
 
         }
     }
