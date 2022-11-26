@@ -4,6 +4,7 @@ export declare class BatteryBalanceCounter {
     energyImported: number;
     energyFeeded: number;
     batteryLoad: number;
+    batteryLoadInc: number;
     buyPrice: PriceIntervalItem | null;
     sellPrice: PriceIntervalItem | null;
     constructor(imported: number, feeded: number, load: number);
