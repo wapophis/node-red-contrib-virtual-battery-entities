@@ -34,6 +34,7 @@ export class BatteryBalanceCounter{
             this.energyImported+=balanceNeto.getFeeded();
             this.energyFeeded===undefined || this.energyFeeded===null || this.energyFeeded==NaN ?this.energyFeeded=0:false;
             if(this.buyPrice!==null){
+                this.batteryLoadInc=balanceNeto.getFeeded()*(this.buyPrice.getPrice()/1000000);
                 this.batteryLoad+=balanceNeto.getFeeded()*(this.buyPrice.getPrice()/1000000);
             }else{
                 throw Error("No buyPrice settled");
@@ -78,7 +79,7 @@ export class BatteryBalanceCounter{
             energyImported:this.energyImported===undefined || this.energyImported===NaN?0:this.energyImported,
             energyFeeded:this.energyFeeded===undefined || this.energyFeeded===NaN?0:this.energyFeeded,
             batteryLoad:this.batteryLoad,
-            this.batteryLoadInc=this.batteryLoadInc,
+            batteryLoadInc:this.batteryLoadInc,
             buyPrice:this.buyPrice,
             sellPrice:this.sellPrice,
             // terminoEnergia:this.terminoEnergiaSum,
