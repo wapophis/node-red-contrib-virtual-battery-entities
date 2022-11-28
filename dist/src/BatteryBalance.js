@@ -9,6 +9,8 @@ class BatteryBalanceCounter {
     terminoPotenciaPrice:PriceIntervalItem|null=null;
     */
     constructor(imported, feeded, load) {
+        this.energyImported = 0;
+        this.energyFeeded = 0;
         this.batteryLoadInc = 0;
         this.buyPrice = null;
         this.sellPrice = null;
@@ -24,7 +26,7 @@ class BatteryBalanceCounter {
     addBalaceNeto(balanceNeto) {
         console.log(JSON.stringify({ class: "BatteryBalanceCouter", method: "addBalaceNeto", args: arguments }));
         if (balanceNeto.getFeeded() < 0) {
-            this.energyImported += balanceNeto.getFeeded();
+            this.energyImported == null ? this.energyImported = balanceNeto.getFeeded() : this.energyImported += balanceNeto.getFeeded();
             this.energyFeeded === undefined || this.energyFeeded === null || this.energyFeeded == NaN ? this.energyFeeded = 0 : false;
             if (this.buyPrice !== null) {
                 this.batteryLoadInc = balanceNeto.getFeeded() * (this.buyPrice.getPrice() / 1000000);
@@ -55,6 +57,12 @@ class BatteryBalanceCounter {
     //         }
     // }
     setPrices(buyPrice, sellPrice) {
+        if (buyPrice === undefined || buyPrice === null) {
+            throw Error("Buy price is null");
+        }
+        if (sellPrice === undefined || buyPrice === null) {
+            throw Error("Sell price is null");
+        }
         this.buyPrice = buyPrice;
         this.sellPrice = sellPrice;
     }

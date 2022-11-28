@@ -4,8 +4,8 @@ import { PriceIntervalItem } from "./PriceIntervalItem";
 
 
 export class BatteryBalanceCounter{
-    energyImported: number;
-    energyFeeded: number;    
+    energyImported: number=0;
+    energyFeeded: number=0;    
     batteryLoad: number;
     batteryLoadInc:number=0;
     buyPrice: PriceIntervalItem|null=null;
@@ -31,7 +31,7 @@ export class BatteryBalanceCounter{
     addBalaceNeto(balanceNeto:BalanceNetoHorario){
         console.log(JSON.stringify({class:"BatteryBalanceCouter",method:"addBalaceNeto",args:arguments}));
         if(balanceNeto.getFeeded()<0){
-            this.energyImported+=balanceNeto.getFeeded();
+            this.energyImported==null?this.energyImported=balanceNeto.getFeeded():this.energyImported+=balanceNeto.getFeeded();
             this.energyFeeded===undefined || this.energyFeeded===null || this.energyFeeded==NaN ?this.energyFeeded=0:false;
             if(this.buyPrice!==null){
                 this.batteryLoadInc=balanceNeto.getFeeded()*(this.buyPrice.getPrice()/1000000);
@@ -64,6 +64,13 @@ export class BatteryBalanceCounter{
     // }
 
     setPrices(buyPrice:PriceIntervalItem,sellPrice:PriceIntervalItem|null){
+        if(buyPrice===undefined || buyPrice===null){
+            throw Error("Buy price is null");
+        }
+        if(sellPrice===undefined || buyPrice===null){
+            throw Error("Sell price is null");
+        }
+
         this.buyPrice=buyPrice;
         this.sellPrice=sellPrice;
     }
