@@ -30,7 +30,7 @@ class BatteryBalanceCounter {
             this.energyFeeded === undefined || this.energyFeeded === null || this.energyFeeded == NaN ? this.energyFeeded = 0 : false;
             if (this.buyPrice !== null) {
                 this.batteryLoadInc = balanceNeto.getFeeded() * (this.buyPrice.getPrice() / 1000000);
-                this.batteryLoad += balanceNeto.getFeeded() * (this.buyPrice.getPrice() / 1000000);
+                this.batteryLoad += this.batteryLoadInc;
             }
             else {
                 throw Error("No buyPrice settled");
@@ -71,6 +71,7 @@ class BatteryBalanceCounter {
     //     this.terminoPotenciaPrice=potencia;
     // }
     get() {
+        var _a, _b;
         return {
             energyImported: this.energyImported === undefined || this.energyImported === NaN ? 0 : this.energyImported,
             energyFeeded: this.energyFeeded === undefined || this.energyFeeded === NaN ? 0 : this.energyFeeded,
@@ -78,6 +79,8 @@ class BatteryBalanceCounter {
             batteryLoadInc: this.batteryLoadInc,
             buyPrice: this.buyPrice,
             sellPrice: this.sellPrice,
+            buyedAtPrice: (_a = this.buyPrice) === null || _a === void 0 ? void 0 : _a.getPrice(),
+            selledAtPrice: (_b = this.sellPrice) === null || _b === void 0 ? void 0 : _b.getPrice()
             // terminoEnergia:this.terminoEnergiaSum,
             // terminoPotencia:this.terminoPotenciaSum
         };
