@@ -12,9 +12,11 @@ export class BalanceNeto{
     constructor(msg:any){
         if(msg===undefined){
             this.duration=Duration.ofMinutes(1);
-            let numberOfSlots=Math.floor(LocalDateTime.now().get(ChronoField.MINUTE_OF_DAY)/this.duration.toMinutes());
-            this.startTime=LocalDateTime.now().withMinute(0).withSecond(0).withNano(0).minusMinutes(numberOfSlots*this.duration.toMinutes());
-            this.endTime=this.startTime.plusMinutes(this.duration.toMinutes());
+            this.startTime=LocalDateTime.now();
+            this.endTime=LocalDateTime.now();
+
+            //this.startTime=LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+            this.setDuration(this.duration.toMinutes());
             this.batterySlots=new Array();
             this.length=null;
             this.consolidable=false;
@@ -33,5 +35,13 @@ export class BalanceNeto{
                 this.length=msg.length;
                 this.consolidable=msg.isConsolidable;
             }
+    }
+
+    setDuration(durationInMinutes:number):BalanceNeto{
+        this.duration=Duration.ofMinutes(durationInMinutes);
+        let numberOfSlots=Math.floor(LocalDateTime.now().get(ChronoField.MINUTE_OF_DAY)/durationInMinutes);
+        this.startTime=LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0).plusMinutes(numberOfSlots*durationInMinutes);
+        this.endTime=this.startTime.plusMinutes(durationInMinutes);
+        return this;
     }
 }

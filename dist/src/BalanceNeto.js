@@ -6,7 +6,7 @@ const BatterySlot_1 = require("./BatterySlot");
 class BalanceNeto {
     constructor(msg) {
         if (msg === undefined) {
-            this.duration = core_1.Duration.ofMinutes(0);
+            this.duration = core_1.Duration.ofMinutes(1);
             let numberOfSlots = Math.floor(core_1.LocalDateTime.now().get(core_1.ChronoField.MINUTE_OF_DAY) / this.duration.toMinutes());
             this.startTime = core_1.LocalDateTime.now().withMinute(0).withSecond(0).withNano(0).minusMinutes(numberOfSlots * this.duration.toMinutes());
             this.endTime = this.startTime.plusMinutes(this.duration.toMinutes());

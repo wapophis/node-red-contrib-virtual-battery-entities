@@ -27,7 +27,7 @@ class BatteryBalanceCounter {
         console.log(JSON.stringify({ class: "BatteryBalanceCouter", method: "addBalaceNeto", args: arguments }));
         if (balanceNeto.getFeeded() < 0) {
             this.energyImported == null ? this.energyImported = balanceNeto.getFeeded() : this.energyImported += balanceNeto.getFeeded();
-            this.energyFeeded === undefined || this.energyFeeded === null || this.energyFeeded == NaN ? this.energyFeeded = 0 : false;
+            this.energyFeeded === undefined || this.energyFeeded === null || Number.isNaN(this.energyFeeded) ? this.energyFeeded = 0 : false;
             if (this.buyPrice !== null) {
                 this.batteryLoadInc = balanceNeto.getFeeded() * (this.buyPrice.getPrice() / 1000000);
                 this.batteryLoad += this.batteryLoadInc;
@@ -38,7 +38,7 @@ class BatteryBalanceCounter {
         }
         else {
             this.energyFeeded += balanceNeto.getFeeded();
-            this.energyImported === undefined || this.energyImported === NaN || this.energyImported === null ? this.energyImported = 0 : false;
+            this.energyImported === undefined || Number.isNaN(this.energyImported) || this.energyImported === null ? this.energyImported = 0 : false;
             if (this.sellPrice !== null) {
                 this.batteryLoadInc = balanceNeto.getFeeded() * (this.sellPrice.getPrice() / 1000000);
                 this.batteryLoad += this.batteryLoadInc;
@@ -73,8 +73,8 @@ class BatteryBalanceCounter {
     get() {
         var _a, _b;
         return {
-            energyImported: this.energyImported === undefined || this.energyImported === NaN ? 0 : this.energyImported,
-            energyFeeded: this.energyFeeded === undefined || this.energyFeeded === NaN ? 0 : this.energyFeeded,
+            energyImported: this.energyImported === undefined || Number.isNaN(this.energyImported) ? 0 : this.energyImported,
+            energyFeeded: this.energyFeeded === undefined || Number.isNaN(this.energyFeeded) ? 0 : this.energyFeeded,
             batteryLoad: this.batteryLoad,
             batteryLoadInc: this.batteryLoadInc,
             buyPrice: this.buyPrice,
