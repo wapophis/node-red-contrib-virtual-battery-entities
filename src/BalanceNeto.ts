@@ -1,5 +1,11 @@
 import { ChronoField, Duration, IsoFields, LocalDateTime } from "@js-joda/core";
 import { BatterySlot } from "./BatterySlot";
+import { PricesTables } from "./PriceTables";
+
+export type ResultSlot={
+    timeStamp:LocalDateTime;
+    value:Number;
+}
 
 export class BalanceNeto{
     startTime:LocalDateTime;
@@ -8,6 +14,8 @@ export class BalanceNeto{
     length: number|null;
     consolidable:boolean;
     duration:Duration;
+
+    pricesCache:PricesTables=new PricesTables();
 
     constructor(msg:any){
         if(msg===undefined){
@@ -79,7 +87,7 @@ export class BalanceNeto{
         
     }
 
-    getProduced(){
+    getProduced():Number{
         let count=0;
         this.batterySlots.forEach(function(item:BatterySlot){
             let slotsInHour=(60*60*1000)/item.getLength();
@@ -90,7 +98,27 @@ export class BalanceNeto{
         });
         return count;
     }
-    getFeeded(){
+    getProducedInSlots(slotDuration:Duration):ResultSlot[]{
+        let slotStartOffset=this.startTime;
+        let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
+        let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
+        let oVal=new Array<ResultSlot>();    
+        while(slotEndOffset.isBefore(this.endTime)){
+            let count=0;
+            this.batterySlots.filter((batSlot:BatterySlot)=>{
+                return batSlot.readTimeStamp.isBefore(slotEndOffset) && batSlot.readTimeStamp.isAfter(slotStartOffset);
+            }).forEach((item:BatterySlot)=>{
+                count+=item.producedInWatsH/slotsInHour;
+            });
+            oVal.push({timeStamp:slotStartOffset,value:count});    
+            slotStartOffset.plusMinutes(slotDuration.toMinutes());
+            slotEndOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
+        };
+
+        return oVal;
+    }
+
+    getFeeded():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
             let slotsInHour=(60*60*1000)/item.getLength();
@@ -102,7 +130,7 @@ export class BalanceNeto{
         });
         return count;
     }
-    getConsumed(){
+    getConsumed():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
             let slotsInHour=(60*60*1000)/item.getLength();
@@ -143,6 +171,10 @@ export class BalanceNeto{
 
     isConsolidable(){
         return this.consolidable;
+    }
+
+    setPricesTables(pricetables:PricesTables){
+        this.pricesCache=pricetables;
     }
 
     _autoConsolidate(){
