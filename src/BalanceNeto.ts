@@ -4,7 +4,7 @@ import { PricesTables } from "./PriceTables";
 
 export type ResultSlot={
     timeStamp:LocalDateTime;
-    value:Number;
+    value:number;
 }
 
 export class BalanceNeto{
@@ -103,16 +103,16 @@ export class BalanceNeto{
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
         let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
         let oVal=new Array<ResultSlot>();    
-        while(slotEndOffset.isBefore(this.endTime)){
+        while(slotEndOffset.compareTo(this.endTime)<=0){
             let count=0;
             this.batterySlots.filter((batSlot:BatterySlot)=>{
-                return batSlot.readTimeStamp.isBefore(slotEndOffset) && batSlot.readTimeStamp.isAfter(slotStartOffset);
+                return batSlot.readTimeStamp.compareTo(slotEndOffset)<=0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
-                count+=item.producedInWatsH/slotsInHour;
+                count+=(item.producedInWatsH/slotsInHour).toPrecision(4);
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
-            slotStartOffset.plusMinutes(slotDuration.toMinutes());
-            slotEndOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
+            slotStartOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
+            slotEndOffset=slotEndOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
         };
 
         return oVal;
