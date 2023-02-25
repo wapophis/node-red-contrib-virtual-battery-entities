@@ -1,5 +1,5 @@
 import { ChronoField, Duration, LocalDateTime } from "@js-joda/core";
-import { BalanceNeto } from "../src/BalanceNeto";
+import { BalanceNeto, ResultSlot } from "../src/BalanceNeto";
 import { BatterySlot } from "../src/BatterySlot";
 
 describe("Testing BalanceNeto",()=>{
@@ -157,6 +157,93 @@ describe("Testing BalanceNeto",()=>{
         expect(balaceNeto.endTime.isBefore(balaceNeto.batterySlots[balaceNeto.batterySlots.length-1].readTimeStamp)).toBeTruthy();
         startTime=slot.readTimeStamp;
         
+    });
+
+    test("Getting Energy production data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds(slotLength/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=Math.floor(Math.random() * 9999999);
+                /*slot.consumedInWatsH=1000;
+                slot.feededInWatsH=1000;
+                slot.producedInWatsH=1000;*/
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+                    startTime=slot.readTimeStamp;
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getProducedInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result).toBe(balaceNeto.getProduced());
+    });
+
+    test("Getting Energy feeded data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds(slotLength/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=Math.floor(Math.random() * 9999999);
+                /*slot.consumedInWatsH=1000;
+                slot.feededInWatsH=1000;
+                slot.producedInWatsH=1000;*/
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+                    startTime=slot.readTimeStamp;
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getFeededInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result).toBe(balaceNeto.getFeeded());
+    });
+
+    test("Getting Energy consumed data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds(slotLength/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=Math.floor(Math.random() * 9999999);
+                /*slot.consumedInWatsH=1000;
+                slot.feededInWatsH=1000;
+                slot.producedInWatsH=1000;*/
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+                    startTime=slot.readTimeStamp;
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getConsumedInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result).toBe(balaceNeto.getConsumed());
     });
 
 
