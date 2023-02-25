@@ -17,6 +17,12 @@ export class BalanceNeto{
 
     pricesCache:PricesTables=new PricesTables();
 
+    /**
+     * 
+     * @param msg:any|undefined build the object from a serialized Object {
+     * 
+     * }
+     */
     constructor(msg:any){
         if(msg===undefined){
             this.duration=Duration.ofMinutes(1);
@@ -44,7 +50,11 @@ export class BalanceNeto{
                 this.consolidable=msg.isConsolidable;
             }
     }
-
+    /**
+     * Sets Duration of the bucket
+     * @param durationInMinutes Duration in minutes of the Bucket
+     * @returns the instance of this object
+     */
     setDuration(durationInMinutes:number):BalanceNeto{
         this.duration=Duration.ofMinutes(durationInMinutes);
         let numberOfSlots=Math.floor(LocalDateTime.now().get(ChronoField.MINUTE_OF_DAY)/durationInMinutes);
@@ -53,7 +63,12 @@ export class BalanceNeto{
         return this;
     }
 
-    addBatterySlot(slot:BatterySlot){
+    /**
+     * Add an slot to the bucket
+     * @param slot containing the energy info to aggregate to the bucket
+     * @returns the instance of this object
+    */
+    addBatterySlot(slot:BatterySlot):BalanceNeto{
         var slotStart=LocalDateTime.parse(slot.readTimeStamp.toString());
         
         if(slotStart.isBefore(this.startTime)){
@@ -84,9 +99,8 @@ export class BalanceNeto{
 
         this.batterySlots.push(slot);
         this._autoConsolidate();
-        
+        return this;
     }
-
     getProduced():Number{
         let count=0;
         this.batterySlots.forEach(function(item:BatterySlot){
@@ -98,7 +112,6 @@ export class BalanceNeto{
         });
         return count;
     }
-
     getProducedInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
@@ -109,7 +122,7 @@ export class BalanceNeto{
             this.batterySlots.filter((batSlot:BatterySlot)=>{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
-                console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
+ //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
                 count+= item.producedInWatsH/slotsInHour;
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
@@ -119,7 +132,6 @@ export class BalanceNeto{
 
         return oVal;
     }
-
     getFeeded():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
@@ -132,8 +144,6 @@ export class BalanceNeto{
         });
         return count;
     }
-
-
      getFeededInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
@@ -144,7 +154,7 @@ export class BalanceNeto{
             this.batterySlots.filter((batSlot:BatterySlot)=>{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
-                console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
+ //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
                 count+= item.feededInWatsH/slotsInHour;
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
@@ -154,8 +164,6 @@ export class BalanceNeto{
 
         return oVal;
     }
-
-
     getConsumed():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
@@ -167,7 +175,6 @@ export class BalanceNeto{
         });
         return count;
     }
-
     getConsumedInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
@@ -178,7 +185,7 @@ export class BalanceNeto{
             this.batterySlots.filter((batSlot:BatterySlot)=>{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
-                console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
+                //console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
                 count+= item.consumedInWatsH/slotsInHour;
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
@@ -188,8 +195,6 @@ export class BalanceNeto{
 
         return oVal;
     }
-
-    
     get(){
         return {
             balanceNetoHorario:{
@@ -206,24 +211,18 @@ export class BalanceNeto{
             }
         }
     }
-    
     getEndTime():LocalDateTime {
         return LocalDateTime.parse(this.endTime.toString());
     }
-
     getStartTime():LocalDateTime{
         return LocalDateTime.parse(this.startTime.toString());
     }
-
-
     isConsolidable(){
         return this.consolidable;
     }
-
     setPricesTables(pricetables:PricesTables){
         this.pricesCache=pricetables;
     }
-
     _autoConsolidate(){
         /*let slotsTotalDuration=Duration.ofMinutes(0);
         for(let i=0,j=i+1;i<this.batterySlots.length&&j<this.batterySlots.length;i++,j=i+1){
