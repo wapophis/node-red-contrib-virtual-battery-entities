@@ -1,4 +1,4 @@
-import { ChronoField, Duration, IsoFields, LocalDateTime } from "@js-joda/core";
+import { ChronoField, Duration, IsoFields, LocalDateTime, ZoneId } from "@js-joda/core";
 import { BatterySlot } from "./BatterySlot";
 import { PricesTables } from "./PriceTables";
 
@@ -96,7 +96,7 @@ export class BalanceNeto{
         if(slot.producedInWatsH===undefined || isNaN(slot.producedInWatsH) ){
             throw "Error in slot data, producedInWatsH undefined";
         }
-
+        slot.readTimeStamp=LocalDateTime.parse(LocalDateTime.parse(slot.readTimeStamp.toString()).atZone(ZoneId.of("Europe/Madrid")).toString());
         this.batterySlots.push(slot);
         this._autoConsolidate();
         return this;
