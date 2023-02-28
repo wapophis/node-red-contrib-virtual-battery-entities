@@ -7,6 +7,15 @@ export type ResultSlot={
     value:number;
 }
 
+export type BalanceNetoSerialized={
+    startTime:string;
+    endTime:string;
+    batterSlots:any[];
+    length:number;
+    consolidable:boolean;
+    duration:number;
+}
+
 export class BalanceNeto{
     startTime:LocalDateTime;
     endTime:LocalDateTime;
@@ -197,7 +206,7 @@ export class BalanceNeto{
     }
     get(){
         return {
-            balanceNetoHorario:{
+            balanceNeto:{
             feeded:this.getFeeded(),
             consumed:this.getConsumed(),
             produced:this.getProduced(),
@@ -207,7 +216,8 @@ export class BalanceNeto{
             batterySlots:this.batterySlots,
             length:this.batterySlots.length,
             startTime:this.startTime,
-            endTime:this.endTime
+            endTime:this.endTime,
+            duration:this.duration.toMinutes()
             }
         }
     }
@@ -237,9 +247,13 @@ export class BalanceNeto{
     }
 
     
-    of(input:any,type:string){
-        if(type="e-distribucion"){
-            
-        }
+    of(input:BalanceNetoSerialized){
+        this.startTime=LocalDateTime.parse(input.startTime);
+        this.endTime=LocalDateTime.parse(input.endTime);
+        this.duration=Duration.ofMinutes(input.duration);
+        input.batterSlots.forEach((batSlot:any)=>{
+            this.addBatterySlot(new BatterySlot(batSlot));
+        });
+        this.length=this.batterySlots.length;
     }
 }
