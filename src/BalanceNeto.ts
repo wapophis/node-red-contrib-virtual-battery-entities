@@ -1,4 +1,4 @@
-import { ChronoField, Duration, IsoFields, LocalDateTime } from "@js-joda/core";
+import { ChronoField, Duration, IsoFields, LocalDateTime, TemporalField } from "@js-joda/core";
 import { BatterySlot } from "./BatterySlot";
 import { PricesTables } from "./PriceTables";
 
@@ -8,12 +8,22 @@ export type ResultSlot={
 }
 
 export type BalanceNetoSerialized={
-    startTime:string;
-    endTime:string;
-    batterSlots:any[];
     length:number;
-    consolidable:boolean;
     duration:number;
+    feeded:number;
+    consumed:number;
+    produced:number;
+    startAt:string;
+    endAt:string;
+    isConsolidable:boolean;
+    batterySlots:any[];   
+}
+export type BalanceNetoSubBucketSerialized={
+    timeStamp:string,
+    duration:number;
+    feeded:number;
+    consumed:number;
+    produced:number;
 }
 
 export class BalanceNeto{
@@ -141,6 +151,9 @@ export class BalanceNeto{
 
         return oVal;
     }
+    getProducedInSlotsMinutes(slotDuration:number){
+        return this.getProducedInSlots(Duration.ofMinutes(slotDuration));
+    }
     getFeeded():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
@@ -173,6 +186,9 @@ export class BalanceNeto{
 
         return oVal;
     }
+    getFeededInSlotsMinutes(slotDuration:number){
+        return this.getFeededInSlots(Duration.ofMinutes(slotDuration));
+    }
     getConsumed():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
@@ -204,6 +220,9 @@ export class BalanceNeto{
 
         return oVal;
     }
+    getConsumedInSlotsMinutes(slotDuration:number):ResultSlot[]{
+        return this.getConsumedInSlots(Duration.ofMinutes(slotDuration));
+    }
     get(){
         return {
             balanceNeto:{
@@ -216,7 +235,7 @@ export class BalanceNeto{
             batterySlots:this.batterySlots,
             length:this.batterySlots.length,
             startTime:this.startTime,
-            endTime:this.endTime,
+            endTime:this.endTime, 
             duration:this.duration.toMinutes()
             }
         }
@@ -246,12 +265,26 @@ export class BalanceNeto{
         this.consolidable=this.endTime.isBefore(this.batterySlots[this.batterySlots.length-1].readTimeStamp);
     }
 
+    getCurrentSubBucketIndex(durationInMinutes:number):number{
+        return Math.floor((LocalDateTime.now().get(ChronoField.MINUTE_OF_DAY)-this.startTime.get(ChronoField.MINUTE_OF_DAY))/(durationInMinutes));
+    }
+
+    getSerializedSubBucket(index:number,duration:number):BalanceNetoSubBucketSerialized{
+        let oVal:BalanceNetoSubBucketSerialized={
+            consumed:this.getConsumedInSlotsMinutes(duration)[index]?.value,
+            produced:this.getProducedInSlotsMinutes(duration)[index]?.value,
+            feeded:this.getFeededInSlotsMinutes(duration)[index]?.value,
+            duration:duration,
+            timeStamp:this.getConsumedInSlotsMinutes(duration)[index]?.timeStamp.toString()
+        };
+        return oVal;
+    }
     
     of(input:BalanceNetoSerialized){
-        this.startTime=LocalDateTime.parse(input.startTime);
-        this.endTime=LocalDateTime.parse(input.endTime);
+        this.startTime=LocalDateTime.parse(input.startAt);
+        this.endTime=LocalDateTime.parse(input.endAt);
         this.duration=Duration.ofMinutes(input.duration);
-        input.batterSlots.forEach((batSlot:any)=>{
+        input.batterySlots.forEach((batSlot:any)=>{
             this.addBatterySlot(new BatterySlot(batSlot));
         });
         this.length=this.batterySlots.length;

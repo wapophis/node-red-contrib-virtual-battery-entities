@@ -115,6 +115,9 @@ class BalanceNeto {
         ;
         return oVal;
     }
+    getProducedInSlotsMinutes(slotDuration) {
+        return this.getProducedInSlots(core_1.Duration.ofMinutes(slotDuration));
+    }
     getFeeded() {
         let count = 0;
         this.batterySlots.forEach(function (item) {
@@ -147,6 +150,9 @@ class BalanceNeto {
         ;
         return oVal;
     }
+    getFeededInSlotsMinutes(slotDuration) {
+        return this.getFeededInSlots(core_1.Duration.ofMinutes(slotDuration));
+    }
     getConsumed() {
         let count = 0;
         this.batterySlots.forEach(function (item) {
@@ -177,6 +183,9 @@ class BalanceNeto {
         }
         ;
         return oVal;
+    }
+    getConsumedInSlotsMinutes(slotDuration) {
+        return this.getConsumedInSlots(core_1.Duration.ofMinutes(slotDuration));
     }
     get() {
         return {
@@ -219,11 +228,25 @@ class BalanceNeto {
         }*/
         this.consolidable = this.endTime.isBefore(this.batterySlots[this.batterySlots.length - 1].readTimeStamp);
     }
+    getCurrentSubBucketIndex(durationInMinutes) {
+        return Math.floor((core_1.LocalDateTime.now().get(core_1.ChronoField.MINUTE_OF_DAY) - this.startTime.get(core_1.ChronoField.MINUTE_OF_DAY)) / (durationInMinutes));
+    }
+    getSerializedSubBucket(index, duration) {
+        var _a, _b, _c, _d;
+        let oVal = {
+            consumed: (_a = this.getConsumedInSlotsMinutes(duration)[index]) === null || _a === void 0 ? void 0 : _a.value,
+            produced: (_b = this.getProducedInSlotsMinutes(duration)[index]) === null || _b === void 0 ? void 0 : _b.value,
+            feeded: (_c = this.getFeededInSlotsMinutes(duration)[index]) === null || _c === void 0 ? void 0 : _c.value,
+            duration: duration,
+            timeStamp: (_d = this.getConsumedInSlotsMinutes(duration)[index]) === null || _d === void 0 ? void 0 : _d.timeStamp.toString()
+        };
+        return oVal;
+    }
     of(input) {
-        this.startTime = core_1.LocalDateTime.parse(input.startTime);
-        this.endTime = core_1.LocalDateTime.parse(input.endTime);
+        this.startTime = core_1.LocalDateTime.parse(input.startAt);
+        this.endTime = core_1.LocalDateTime.parse(input.endAt);
         this.duration = core_1.Duration.ofMinutes(input.duration);
-        input.batterSlots.forEach((batSlot) => {
+        input.batterySlots.forEach((batSlot) => {
             this.addBatterySlot(new BatterySlot_1.BatterySlot(batSlot));
         });
         this.length = this.batterySlots.length;

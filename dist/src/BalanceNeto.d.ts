@@ -6,12 +6,22 @@ export type ResultSlot = {
     value: number;
 };
 export type BalanceNetoSerialized = {
-    startTime: string;
-    endTime: string;
-    batterSlots: any[];
     length: number;
-    consolidable: boolean;
     duration: number;
+    feeded: number;
+    consumed: number;
+    produced: number;
+    startAt: string;
+    endAt: string;
+    isConsolidable: boolean;
+    batterySlots: any[];
+};
+export type BalanceNetoSubBucketSerialized = {
+    timeStamp: string;
+    duration: number;
+    feeded: number;
+    consumed: number;
+    produced: number;
 };
 export declare class BalanceNeto {
     startTime: LocalDateTime;
@@ -42,10 +52,13 @@ export declare class BalanceNeto {
     addBatterySlot(slot: BatterySlot): BalanceNeto;
     getProduced(): Number;
     getProducedInSlots(slotDuration: Duration): ResultSlot[];
+    getProducedInSlotsMinutes(slotDuration: number): ResultSlot[];
     getFeeded(): Number;
     getFeededInSlots(slotDuration: Duration): ResultSlot[];
+    getFeededInSlotsMinutes(slotDuration: number): ResultSlot[];
     getConsumed(): Number;
     getConsumedInSlots(slotDuration: Duration): ResultSlot[];
+    getConsumedInSlotsMinutes(slotDuration: number): ResultSlot[];
     get(): {
         balanceNeto: {
             feeded: Number;
@@ -66,5 +79,7 @@ export declare class BalanceNeto {
     isConsolidable(): boolean;
     setPricesTables(pricetables: PricesTables): void;
     _autoConsolidate(): void;
+    getCurrentSubBucketIndex(durationInMinutes: number): number;
+    getSerializedSubBucket(index: number, duration: number): BalanceNetoSubBucketSerialized;
     of(input: BalanceNetoSerialized): void;
 }
