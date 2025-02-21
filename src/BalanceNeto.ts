@@ -14,6 +14,7 @@ export class BalanceNeto{
     length: number|null;
     consolidable:boolean;
     duration:Duration;
+    slotsOffset:number|0;
 
     pricesCache:PricesTables=new PricesTables();
 
@@ -28,6 +29,7 @@ export class BalanceNeto{
             this.duration=Duration.ofMinutes(1);
             this.startTime=LocalDateTime.now();
             this.endTime=LocalDateTime.now();
+            this.slotsOffset=0;
 
             //this.startTime=LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
             this.setDuration(this.duration.toMinutes());
@@ -39,6 +41,7 @@ export class BalanceNeto{
                 this.startTime=LocalDateTime.parse(msg.startTime.toString());
                 this.endTime=LocalDateTime.parse(msg.endTime.toString());
                 this.batterySlots=[];
+                this.slotsOffset=msg.slotOffset|0;
                 try{
                 msg.batterySlots.forEach((item:any)=>{
                     this.batterySlots.push(new BatterySlot(item));
@@ -69,6 +72,7 @@ export class BalanceNeto{
      * @returns the instance of this object
     */
     addBatterySlot(slot:BatterySlot):BalanceNeto{
+        slot=this.batterySlotCorrectOffset(slot);
         var slotStart=LocalDateTime.parse(slot.readTimeStamp.toString());
         
         if(slotStart.isBefore(this.startTime)){
@@ -96,11 +100,22 @@ export class BalanceNeto{
         if(slot.producedInWatsH===undefined || isNaN(slot.producedInWatsH) ){
             throw "Error in slot data, producedInWatsH undefined";
         }
-        slot.readTimeStamp=LocalDateTime.parse(LocalDateTime.parse(slot.readTimeStamp.toString()).atZone(ZoneId.of("Europe/Madrid")).toString());
+        //slot.readTimeStamp=LocalDateTime.parse(LocalDateTime.parse(slot.readTimeStamp.toString()).atZone(ZoneId.of("Europe/Madrid")).toString());
         this.batterySlots.push(slot);
         this._autoConsolidate();
         return this;
     }
+
+    batterySlotCorrectOffset(slot:BatterySlot):BatterySlot{
+        if(this.slotsOffset>0){
+           slot.readTimeStamp=slot.readTimeStamp.plusHours(this.slotsOffset);
+        }
+        if(this.slotsOffset<0){
+            slot.readTimeStamp=slot.readTimeStamp.minusHours(-1*this.slotsOffset);
+        }
+        return slot;
+    }
+
     getProduced():Number{
         let count=0;
         this.batterySlots.forEach(function(item:BatterySlot){
@@ -241,5 +256,8 @@ export class BalanceNeto{
         if(type="e-distribucion"){
             
         }
+    }
+    setSlotOffset(slotOffsetInHours:number){
+        this.slotsOffset=slotOffsetInHours;
     }
 }

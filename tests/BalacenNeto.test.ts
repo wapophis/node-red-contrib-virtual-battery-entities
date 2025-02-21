@@ -26,7 +26,8 @@ describe("Testing BalanceNeto",()=>{
     
     function getSlot():BatterySlot{
     return new BatterySlot({
-        readTimeStamp:LocalDateTime.now().toString(),
+        //readTimeStamp:LocalDateTime.now().toString(),
+        readTimeStamp:new Date().toISOString().slice(0,-5),
         length:5000,
         producedInWatsH:undefined,
         feededInWatsH:undefined,
@@ -72,6 +73,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When net balance is consolidable",()=>{
         let balaceNeto=new BalanceNeto(undefined);
+        balaceNeto.setSlotOffset(1);
         balaceNeto.consolidable=true;
         let slot=getSlot();
         slot.consumedInWatsH=0;
@@ -81,7 +83,8 @@ describe("Testing BalanceNeto",()=>{
     });
    
     test("When feededInWatsH bad slot data",()=>{
-        let balaceNeto=new BalanceNeto(undefined);  
+        let balaceNeto=new BalanceNeto(undefined);
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.producedInWatsH=0;
         slot.consumedInWatsH=0;
@@ -90,6 +93,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When consumedInWatsH bad slot data",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.producedInWatsH=0;
         slot.feededInWatsH=0;
@@ -98,6 +102,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When producedInWatsH bad slot data",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.consumedInWatsH=0;
         slot.feededInWatsH=0;
@@ -106,6 +111,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When Randomly adding slots ",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         
         for (let i=0;i<Math.floor(Math.random() * 999);i++){
             let slot=getSlot();
@@ -119,6 +125,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Energy production data is working properly",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.consumedInWatsH=0;
         slot.producedInWatsH=10000000;
@@ -129,6 +136,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Autoconsolidation works as expected adding slots",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let startTime=LocalDateTime.now();
         let slotLength=getSlot().getLength();
         balaceNeto.setDuration(15);
@@ -161,6 +169,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Getting Energy production data in slots",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slotLength=getSlot().getLength();
         balaceNeto.setDuration(15);
         let startTime=balaceNeto.startTime;
@@ -190,6 +199,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Getting Energy feeded data in slots",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slotLength=getSlot().getLength();
         balaceNeto.setDuration(15);
         let startTime=balaceNeto.startTime;
@@ -219,6 +229,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Getting Energy consumed data in slots",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slotLength=getSlot().getLength();
         balaceNeto.setDuration(15);
         let startTime=balaceNeto.startTime;
@@ -249,6 +260,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Serialization",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         balaceNeto.setDuration(15);
         
         for (let i=0;i<Math.floor(Math.random() * 100);i++){
