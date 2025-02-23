@@ -132,13 +132,17 @@ export class BalanceNeto{
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
         let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
         let oVal=new Array<ResultSlot>();
+     
         while(slotEndOffset.compareTo(this.endTime)<=0){
             let count=  0;
+            
             this.batterySlots.filter((batSlot:BatterySlot)=>{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
- //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
+                //console.log(item.readTimeStamp.toString());
                 count+= item.producedInWatsH/slotsInHour;
+                
+                
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
             slotStartOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
