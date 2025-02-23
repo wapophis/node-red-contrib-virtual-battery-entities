@@ -8,9 +8,9 @@ export class BatterySlot{
     consumedInWatsH: number;
 
     constructor(msg:any){
-        let dateTimeformater=DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss');
+        let dateTimeformater=DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         //this.readTimeStamp=LocalDateTime.parse(msg.payload.uploadTime,dateTimeformater).plusHours(1);
-        this.readTimeStamp=LocalDateTime.parse(msg.readTimeStamp.toString());
+        this.readTimeStamp=LocalDateTime.parse(msg.readTimeStamp.toString(),dateTimeformater);
         //this.length=LocalDateTime.now().until(readTimeStamp,ChronoUnit.SECONDS)*1000;
         this.length=msg.length;
         this.producedInWatsH=msg.producedInWatsH;

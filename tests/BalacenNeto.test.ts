@@ -1,5 +1,5 @@
 import { ChronoField, Duration, LocalDateTime } from "@js-joda/core";
-import { BalanceNeto } from "../src/BalanceNeto";
+import { BalanceNeto, ResultSlot } from "../src/BalanceNeto";
 import { BatterySlot } from "../src/BatterySlot";
 
 describe("Testing BalanceNeto",()=>{
@@ -26,7 +26,8 @@ describe("Testing BalanceNeto",()=>{
     
     function getSlot():BatterySlot{
     return new BatterySlot({
-        readTimeStamp:LocalDateTime.now().toString(),
+        //readTimeStamp:LocalDateTime.now().toString(),
+        readTimeStamp:new Date().toISOString().slice(0,-5),
         length:5000,
         producedInWatsH:undefined,
         feededInWatsH:undefined,
@@ -72,6 +73,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When net balance is consolidable",()=>{
         let balaceNeto=new BalanceNeto(undefined);
+        balaceNeto.setSlotOffset(1);
         balaceNeto.consolidable=true;
         let slot=getSlot();
         slot.consumedInWatsH=0;
@@ -81,7 +83,8 @@ describe("Testing BalanceNeto",()=>{
     });
    
     test("When feededInWatsH bad slot data",()=>{
-        let balaceNeto=new BalanceNeto(undefined);  
+        let balaceNeto=new BalanceNeto(undefined);
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.producedInWatsH=0;
         slot.consumedInWatsH=0;
@@ -90,6 +93,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When consumedInWatsH bad slot data",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.producedInWatsH=0;
         slot.feededInWatsH=0;
@@ -98,6 +102,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When producedInWatsH bad slot data",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.consumedInWatsH=0;
         slot.feededInWatsH=0;
@@ -106,6 +111,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("When Randomly adding slots ",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         
         for (let i=0;i<Math.floor(Math.random() * 999);i++){
             let slot=getSlot();
@@ -119,6 +125,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Energy production data is working properly",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let slot=getSlot();
         slot.consumedInWatsH=0;
         slot.producedInWatsH=10000000;
@@ -129,6 +136,7 @@ describe("Testing BalanceNeto",()=>{
 
     test("Autoconsolidation works as expected adding slots",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         let startTime=LocalDateTime.now();
         let slotLength=getSlot().getLength();
         balaceNeto.setDuration(15);
@@ -159,9 +167,89 @@ describe("Testing BalanceNeto",()=>{
         
     });
 
+    test("Getting Energy production data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(0); //NO OFFSET FOR THIS TEST READTIMESTAMP IS DINAMICALLY ALTERED
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds((i*slotLength)/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=720;
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getProducedInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result.toFixed(2)).toBe(balaceNeto.getProduced().toFixed(2));
+    });
+
+    test("Getting Energy feeded data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(0);
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds((i*slotLength)/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=Math.floor(Math.random() * 9999999);
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getFeededInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result.toFixed(2)).toBe(balaceNeto.getFeeded().toFixed(2));
+    });
+
+    test("Getting Energy consumed data in slots",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(0);
+        let slotLength=getSlot().getLength();
+        balaceNeto.setDuration(15);
+        let startTime=balaceNeto.startTime;
+
+        
+            for (let i=0;i<(15*60*1000)/slotLength;i++){
+                let slot=getSlot();
+                slot.readTimeStamp=startTime.plusSeconds((i*slotLength)/1000);
+                slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.producedInWatsH=Math.floor(Math.random() * 9999999);
+                if(balaceNeto.isConsolidable()===false){
+                    balaceNeto.addBatterySlot(slot);
+                }
+            }
+    
+        let result=0;
+        balaceNeto.getConsumedInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+            result+=rslot.value;
+        });
+        expect(result.toFixed(2)).toBe(balaceNeto.getConsumed().toFixed(2));
+    });
+
 
     test("Serialization",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
+        balaceNeto.setSlotOffset(1);
         balaceNeto.setDuration(15);
         
         for (let i=0;i<Math.floor(Math.random() * 100);i++){
