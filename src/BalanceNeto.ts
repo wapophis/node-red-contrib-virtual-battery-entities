@@ -53,6 +53,7 @@ export class BalanceNeto{
                 this.consolidable=msg.isConsolidable;
             }
     }
+    
     /**
      * Sets Duration of the bucket
      * @param durationInMinutes Duration in minutes of the Bucket
@@ -217,6 +218,7 @@ export class BalanceNeto{
     get(){
         return {
             balanceNeto:{
+            duration:this.duration,
             feeded:this.getFeeded(),
             consumed:this.getConsumed(),
             produced:this.getProduced(),
@@ -266,6 +268,22 @@ export class BalanceNeto{
         if(type="e-distribucion"){
             
         }
+        if(type="json"){
+            this.duration=Duration.ofMinutes(input.duration.toString());
+            this.startTime=LocalDateTime.parse(input.startTime.toString());
+            this.endTime=LocalDateTime.parse(input.endTime.toString());
+            this.batterySlots=[];
+            this.slotsOffset=input.slotOffset|0;
+            try{
+                input.batterySlots.forEach((item:any)=>{
+                this.batterySlots.push(new BatterySlot(item));
+            });
+            }catch(e){
+            console.log(e);
+            }
+            this.length=input.length;
+            this.consolidable=input.isConsolidable;
+        }
     }
     /**
      * 
@@ -305,7 +323,7 @@ export class BalanceNeto{
      */
     getExportedToGridInUnits(divisor:number):number{
         let feeded:number=(parseFloat(this.getFeeded().toString())/divisor); 
-        return (feeded<0?feeded:0);
+        return (feeded>0?feeded:0);
     }
 
 }
