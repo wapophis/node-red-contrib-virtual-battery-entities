@@ -139,7 +139,7 @@ export class BalanceNeto{
             this.batterySlots.filter((batSlot:BatterySlot)=>{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
-                //console.log(item.readTimeStamp.toString());
+ //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
                 count+= item.producedInWatsH/slotsInHour;
                 
                 
@@ -216,7 +216,7 @@ export class BalanceNeto{
     }
     get(){
         return {
-            balanceNetoHorario:{
+            balanceNeto:{
             feeded:this.getFeeded(),
             consumed:this.getConsumed(),
             produced:this.getProduced(),
@@ -226,7 +226,9 @@ export class BalanceNeto{
             batterySlots:this.batterySlots,
             length:this.batterySlots.length,
             startTime:this.startTime,
-            endTime:this.endTime
+            endTime:this.endTime,
+            imported:this.getImportedFromGrid(),
+            exported:this.getExportedToGrid()
             }
         }
     }
@@ -255,13 +257,55 @@ export class BalanceNeto{
         this.consolidable=this.endTime.isBefore(this.batterySlots[this.batterySlots.length-1].readTimeStamp);
     }
 
-    
+    /**
+    *  TODO
+    * @param input 
+    * @param type 
+    */
     of(input:any,type:string){
         if(type="e-distribucion"){
             
         }
     }
+    /**
+     * 
+     * @param slotOffsetInHours Set hours in slots comming into to be corrected
+     */
     setSlotOffset(slotOffsetInHours:number){
         this.slotsOffset=slotOffsetInHours;
     }
+
+    /**
+     * 
+     * @returns energy imnported from grid in wats
+     */
+    getImportedFromGrid():number{
+        return this.getImportedFromGridInUnits(1);
+    }
+    /**
+     * 
+     * @returns energy exported to the grid in wats
+     */
+    getExportedToGrid():number{
+        return this.getExportedToGridInUnits(1);
+    }
+    /**
+     * 
+     * @param divisor unit divisor for the output energy value
+     * @returns energy imported from grid with divisor applied
+     */
+    getImportedFromGridInUnits(divisor:number):number{
+        let feeded:number=(parseFloat(this.getFeeded().toString())/divisor); 
+        return (feeded<0?feeded:0);
+    }
+    /**
+     * 
+     * @param divisor unit divisor for the output energy value
+     * @returns energy exported to grid with divisor applied
+     */
+    getExportedToGridInUnits(divisor:number):number{
+        let feeded:number=(parseFloat(this.getFeeded().toString())/divisor); 
+        return (feeded<0?feeded:0);
+    }
+
 }
