@@ -68,6 +68,61 @@ export class BalanceNeto{
     }
 
     /**
+     * 
+     * @param duration in hours starting at 00 seconds from the current hour
+     * @returns this object
+     */
+    setDurationInHours(duration:number):BalanceNeto{
+        return this.setDuration(60*60*duration);
+    }
+
+    /**
+     * 
+     * @param duration in days starting at 00:00 from the current day
+     * @returns this balanceNeto
+     */
+    setDurationInDays(duration:number):BalanceNeto{
+        return this.setDurationInHours(24*duration);
+    }
+
+    /**
+     * 
+     * @param duration in Weeks, starting at 00:00:00 from the first day of the current week to the 23:59:59 of the last day in the week
+     * @returns this balanceNeto
+     */
+    setDurationInWeeks(duration:number):BalanceNeto{
+        this.duration=Duration.ofDays(duration*7);
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_WEEK)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.endTime=this.startTime.plusWeeks(duration);
+        return this;
+    }
+
+    /**
+     * 
+     * @param duration in months, starting at 00:00:00 from the first day of month, to the last day of month at 23:59:59
+     * @returns 
+     */
+    setDurationInMonths(duration:number):BalanceNeto{
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_MONTH)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.endTime=this.startTime.plusMonths(duration);
+        this.duration=Duration.between(this.startTime,this.endTime);
+        return this;
+    }
+
+    /**
+     * 
+     * @param duration in years, starting at the first day of the year at 00:00:00 to the last day of the year at 23:59:59
+     * @returns 
+     */
+    setDurationInYears(duration:number):BalanceNeto{
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_YEAR)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.endTime=this.startTime.plusYears(duration);
+        this.duration=Duration.between(this.startTime,this.endTime);
+        return this;
+    }
+
+
+    /**
      * Add an slot to the bucket
      * @param slot containing the energy info to aggregate to the bucket
      * @returns the instance of this object
