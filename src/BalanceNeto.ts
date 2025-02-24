@@ -269,7 +269,11 @@ export class BalanceNeto{
             
         }
         if(type="json"){
-            this.duration=Duration.ofMinutes(input.duration.toString());
+            try{
+            this.duration=Duration.parse(input.duration.toString());
+            }catch(e){
+                throw new Error("Durattion cannot be settled because of "+e);
+            }
             this.startTime=LocalDateTime.parse(input.startTime.toString());
             this.endTime=LocalDateTime.parse(input.endTime.toString());
             this.batterySlots=[];
