@@ -57,28 +57,65 @@ export class BalanceNeto{
             }
     }
 
-
-    setDuration(duration:number,chronounit:ChronoUnit):BalanceNeto{
+    /**
+     * 
+     * @param amount of time
+     * @param chronounit unit of time
+     * @returns this object configured with the main bucket duration
+     */
+    setDuration(amount:number,chronounit:ChronoUnit):BalanceNeto{
         if(chronounit===ChronoUnit.MINUTES){
-            return this.setDurationInMinutes(duration);
+            return this.setDurationInMinutes(amount);
         }
         if(chronounit===ChronoUnit.HOURS){
-            return this.setDurationInHours(duration);
+            return this.setDurationInHours(amount);
         }
         if(chronounit===ChronoUnit.DAYS){
-            return this.setDurationInDays(duration);
+            return this.setDurationInDays(amount);
         }
         if(chronounit===ChronoUnit.WEEKS){
-            return this.setDurationInWeeks(duration);
+            return this.setDurationInWeeks(amount);
         }
         if(chronounit===ChronoUnit.MONTHS){
-            return this.setDurationInMonths(duration);
+            return this.setDurationInMonths(amount);
         }
         if(chronounit===ChronoUnit.YEARS){
-            return this.setDurationInYears(duration);
+            return this.setDurationInYears(amount);
         }
-        throw new Error("Failed setting duration of the bucket with "+duration+" of "+chronounit.toString());
+        throw new Error("Failed setting duration of the bucket with "+amount+" of "+chronounit.toString());
+    }
 
+    /***
+     * Static to return ChronoUnits
+     */
+    static getDurationChronoUnit(name:string):ChronoUnit{
+        if(name==="minutes"){
+            return ChronoUnit.MINUTES;
+        }
+        if(name==="hours"){
+            return ChronoUnit.HOURS;
+        }
+        if(name==="days"){
+            return ChronoUnit.DAYS;
+        }
+        if(name==="weeks"){
+            return ChronoUnit.WEEKS;
+        }
+        if(name==="months"){
+            return ChronoUnit.MONTHS;
+        }
+        if(name==="years"){
+            return ChronoUnit.YEARS;
+        }
+        return ChronoUnit.FOREVER;
+    }
+    /**
+     * 
+     * @param batteryLength length in millis of the interval
+     * @returns number of slots which are into an hour
+     */
+    static getSlotsInKWH(batteryLength:number){
+        return (60*60*1000)/batteryLength;
     }
     
     /**
@@ -189,6 +226,11 @@ export class BalanceNeto{
         return this;
     }
 
+    /**
+     * 
+     * @param slot slot to correct the datetime in readTimeStamp field
+     * @returns the slot with readTimeStamp corrected
+     */
     batterySlotCorrectOffset(slot:BatterySlot):BatterySlot{
         if(this.slotsOffset>0){
            slot.readTimeStamp=slot.readTimeStamp.plusHours(this.slotsOffset);
@@ -199,21 +241,28 @@ export class BalanceNeto{
         return slot;
     }
 
+    /**
+     * 
+     * @returns the amount of energy produced in the bucket by the local systems like solar panels
+     */
     getProduced():Number{
         let count=0;
         this.batterySlots.forEach(function(item:BatterySlot){
-            let slotsInHour=(60*60*1000)/item.getLength();
-            count+=item.producedInWatsH/slotsInHour;
+            count+=item.producedInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
             if(isNaN(count)){
                 console.log(item);
             }
         });
         return count;
     }
+    /**
+     * 
+     * @param slotDuration duration of the subBuckets slots 
+     * @returns an ResultSlot containinng the amount of energy produced in the duration of the slot
+     */
     getProducedInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
-        let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
         let oVal=new Array<ResultSlot>();
      
         while(slotEndOffset.compareTo(this.endTime)<=0){
@@ -223,7 +272,7 @@ export class BalanceNeto{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
  //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
-                count+= item.producedInWatsH/slotsInHour;
+                count+= item.producedInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
                 
                 
             });
@@ -234,11 +283,26 @@ export class BalanceNeto{
 
         return oVal;
     }
+    /**
+     * 
+     * @param amount of time
+     * @param chronoUnit unit of time
+     * @returns the slots with the produced energy amnout for the desired duration
+     */
+    public getProducedInSlotsOf(amount:number,chronoUnit:string):ResultSlot[]{
+        let units:ChronoUnit=BalanceNeto.getDurationChronoUnit(chronoUnit);
+        let duration=Duration.of(amount,units);
+        return this.getProducedInSlots(duration);
+    }
+
+    /**
+     * 
+     * @returns the feeded energy in the main bucket
+     */
     getFeeded():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
-            let slotsInHour=(60*60*1000)/item.getLength();
-            count+=item.feededInWatsH/slotsInHour;
+            count+=item.feededInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
             if(isNaN(count)){
                 console.log(item);
                 return 0;
@@ -246,10 +310,15 @@ export class BalanceNeto{
         });
         return count;
     }
-     getFeededInSlots(slotDuration:Duration):ResultSlot[]{
+    /**
+     * 
+     * @param slotDuration duration of the slots
+     * @returns the feeded energy in slots
+     */
+     public getFeededInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
-        let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
+        let subBucketsNumberIn
         let oVal=new Array<ResultSlot>();
         while(slotEndOffset.compareTo(this.endTime)<=0){
             let count=  0;
@@ -257,7 +326,7 @@ export class BalanceNeto{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
  //               console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
-                count+= item.feededInWatsH/slotsInHour;
+                count+= item.feededInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
             slotStartOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
@@ -266,21 +335,40 @@ export class BalanceNeto{
 
         return oVal;
     }
+/**
+ * 
+ * @param amount of time to split the data and make de slots
+ * @param chronoUnit unit time
+ * @returns resultsSlots withd duration of amount of time in chronoUnit time unit. 
+ */
+    public getFeededInSlotsOf(amount:number,chronoUnit:string):ResultSlot[]{
+        let units:ChronoUnit=BalanceNeto.getDurationChronoUnit(chronoUnit);
+        let duration=Duration.of(amount,units);
+        return this.getFeededInSlots(duration);
+    }
+
+    /**
+     * 
+     * @returns the consumed energy in the bucket
+     */
     getConsumed():Number{
         let count=0;
         this.batterySlots.forEach(function(item){
-            let slotsInHour=(60*60*1000)/item.getLength();
-            count+=item.consumedInWatsH/slotsInHour;
+            count+=item.consumedInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
             if(isNaN(count)){
                 console.log(item);
             }
         });
         return count;
     }
+    /**
+     * 
+     * @param slotDuration slot duration
+     * @returns the consumed energy in slot duration
+     */
     getConsumedInSlots(slotDuration:Duration):ResultSlot[]{
         let slotStartOffset=this.startTime;
         let slotEndOffset=this.startTime.plusMinutes(slotDuration.toMinutes());
-        let slotsInHour=(60*60*1000)/this.batterySlots[0].getLength();
         let oVal=new Array<ResultSlot>();
         while(slotEndOffset.compareTo(this.endTime)<=0){
             let count=  0;
@@ -288,7 +376,7 @@ export class BalanceNeto{
                 return batSlot.readTimeStamp.compareTo(slotEndOffset)<0 && batSlot.readTimeStamp.compareTo(slotStartOffset)>=0;
             }).forEach((item:BatterySlot)=>{
                 //console.log({slotStartOffset:slotStartOffset.toString(),slotEndOffset:slotEndOffset.toString(),item:item.readTimeStamp.toString()});
-                count+= item.consumedInWatsH/slotsInHour;
+                count+= item.consumedInWatsH/BalanceNeto.getSlotsInKWH(item.getLength());
             });
             oVal.push({timeStamp:slotStartOffset,value:count});    
             slotStartOffset=slotStartOffset.plusMinutes(slotDuration.toMinutes());
@@ -297,6 +385,23 @@ export class BalanceNeto{
 
         return oVal;
     }
+
+    /**
+     * 
+     * @param amount of time for the slots
+     * @param chronoUnit unit time of the slots
+     * @returns the slots with the consumed energy
+     */
+    public getConsumedInSlotsOf(amount:number,chronoUnit:string):ResultSlot[]{
+        let units:ChronoUnit=BalanceNeto.getDurationChronoUnit(chronoUnit);
+        let duration=Duration.of(amount,units);
+        return this.getConsumedInSlots(duration);
+    }
+
+    /**
+     * 
+     * @returns BalaceNeto in standard object format
+     */
     get(){
         return {
             balanceNeto:{
@@ -317,26 +422,45 @@ export class BalanceNeto{
             }
         }
     }
+    /**
+     * 
+     * @returns end LocaDateTime for the main bucket
+     */
     getEndTime():LocalDateTime {
         return LocalDateTime.parse(this.endTime.toString());
     }
+    /**
+     * 
+     * @returns start LocalDateTime for the main bucket
+     */
     getStartTime():LocalDateTime{
         return LocalDateTime.parse(this.startTime.toString());
     }
+    /**
+     * 
+     * @returns if the main bucket is consolidable, when true no more batslots can be added
+     */
     isConsolidable(){
         return this.consolidable;
     }
+    /**
+     * 
+     * @param pricetables setup the price tables if applicable
+     */
     setPricesTables(pricetables:PricesTables){
         this.pricesCache=pricetables;
     }
+    /**
+     * Internal function to check the bucket as consolidable.
+     */
     _autoConsolidate(){
         this.consolidable=this.endTime.isBefore(this.batterySlots[this.batterySlots.length-1].readTimeStamp);
     }
 
     /**
-    *  TODO
-    * @param input 
-    * @param type 
+    *  
+    * @param input object to initialize or overwrite this slot
+    * @param type input format
     */
     of(input:any,type:string){
         if(type="e-distribucion"){

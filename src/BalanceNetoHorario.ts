@@ -2,7 +2,9 @@ import { LocalDateTime } from "@js-joda/core";
 import { BatterySlot } from "./BatterySlot";
 
 
-
+/**
+ * @deprecated use BalanceNeto instead
+ */
 export class BalanceNetoHorario{
     startTime:LocalDateTime;
     endTime:LocalDateTime;
