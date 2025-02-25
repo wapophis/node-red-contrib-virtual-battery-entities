@@ -1,4 +1,4 @@
-import { ChronoField, Duration, IsoFields, LocalDateTime, ZoneId } from "@js-joda/core";
+import { ChronoField, ChronoUnit, Duration, IsoFields, LocalDateTime, ZoneId } from "@js-joda/core";
 import { BatterySlot } from "./BatterySlot";
 import { PricesTables } from "./PriceTables";
 
@@ -14,6 +14,7 @@ export class BalanceNeto{
     length: number|null;
     consolidable:boolean;
     duration:Duration;
+    durationChronoUnit:ChronoUnit;
     slotsOffset:number|0;
 
     pricesCache:PricesTables=new PricesTables();
@@ -27,17 +28,19 @@ export class BalanceNeto{
     constructor(msg:any){
         if(msg===undefined){
             this.duration=Duration.ofMinutes(1);
+            this.durationChronoUnit=ChronoUnit.MINUTES;
             this.startTime=LocalDateTime.now();
             this.endTime=LocalDateTime.now();
             this.slotsOffset=0;
 
-            //this.startTime=LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
-            this.setDuration(this.duration.toMinutes());
+            //this.setDurationInMinutes(this.duration.toMinutes());
+            this.setDuration(1,ChronoUnit.MINUTES);
             this.batterySlots=new Array();
             this.length=null;
             this.consolidable=false;
             }else{
                 this.duration=Duration.ofMinutes(msg.duration.toString());
+                this.durationChronoUnit=msg.durationChronoUnit;
                 this.startTime=LocalDateTime.parse(msg.startTime.toString());
                 this.endTime=LocalDateTime.parse(msg.endTime.toString());
                 this.batterySlots=[];
@@ -53,13 +56,37 @@ export class BalanceNeto{
                 this.consolidable=msg.isConsolidable;
             }
     }
+
+
+    setDuration(duration:number,chronounit:ChronoUnit):BalanceNeto{
+        if(chronounit===ChronoUnit.MINUTES){
+            return this.setDurationInMinutes(duration);
+        }
+        if(chronounit===ChronoUnit.HOURS){
+            return this.setDurationInHours(duration);
+        }
+        if(chronounit===ChronoUnit.DAYS){
+            return this.setDurationInDays(duration);
+        }
+        if(chronounit===ChronoUnit.WEEKS){
+            return this.setDurationInWeeks(duration);
+        }
+        if(chronounit===ChronoUnit.MONTHS){
+            return this.setDurationInMonths(duration);
+        }
+        if(chronounit===ChronoUnit.YEARS){
+            return this.setDurationInYears(duration);
+        }
+        throw new Error("Failed setting duration of the bucket with "+duration+" of "+chronounit.toString());
+
+    }
     
     /**
      * Sets Duration of the bucket
      * @param durationInMinutes Duration in minutes of the Bucket
      * @returns the instance of this object
      */
-    setDuration(durationInMinutes:number):BalanceNeto{
+    setDurationInMinutes(durationInMinutes:number):BalanceNeto{
         this.duration=Duration.ofMinutes(durationInMinutes);
         let numberOfSlots=Math.floor(LocalDateTime.now().get(ChronoField.MINUTE_OF_DAY)/durationInMinutes);
         this.startTime=LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0).plusMinutes(numberOfSlots*durationInMinutes);
@@ -73,7 +100,7 @@ export class BalanceNeto{
      * @returns this object
      */
     setDurationInHours(duration:number):BalanceNeto{
-        return this.setDuration(60*60*duration);
+        return this.setDurationInMinutes(60*duration);
     }
 
     /**
@@ -92,7 +119,7 @@ export class BalanceNeto{
      */
     setDurationInWeeks(duration:number):BalanceNeto{
         this.duration=Duration.ofDays(duration*7);
-        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_WEEK)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_WEEK)-1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         this.endTime=this.startTime.plusWeeks(duration);
         return this;
     }
@@ -103,7 +130,7 @@ export class BalanceNeto{
      * @returns 
      */
     setDurationInMonths(duration:number):BalanceNeto{
-        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_MONTH)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_MONTH)-1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         this.endTime=this.startTime.plusMonths(duration);
         this.duration=Duration.between(this.startTime,this.endTime);
         return this;
@@ -115,7 +142,7 @@ export class BalanceNeto{
      * @returns 
      */
     setDurationInYears(duration:number):BalanceNeto{
-        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_YEAR)).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        this.startTime=LocalDateTime.now().minusDays(LocalDateTime.now().get(ChronoField.DAY_OF_YEAR)-1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         this.endTime=this.startTime.plusYears(duration);
         this.duration=Duration.between(this.startTime,this.endTime);
         return this;
@@ -274,6 +301,7 @@ export class BalanceNeto{
         return {
             balanceNeto:{
             duration:this.duration,
+            durationChronoUnit:this.durationChronoUnit,
             feeded:this.getFeeded(),
             consumed:this.getConsumed(),
             produced:this.getProduced(),
@@ -302,15 +330,6 @@ export class BalanceNeto{
         this.pricesCache=pricetables;
     }
     _autoConsolidate(){
-        /*let slotsTotalDuration=Duration.ofMinutes(0);
-        for(let i=0,j=i+1;i<this.batterySlots.length&&j<this.batterySlots.length;i++,j=i+1){
-                this.batterySlots[i].calcLenght(this.batterySlots[j]);
-                slotsTotalDuration=slotsTotalDuration.plusMillis(this.batterySlots[i].getLength());
-                console.log(slotsTotalDuration.toMillis());
-        }
-        if(slotsTotalDuration.compareTo(this.duration)>0){
-            this.consolidable=true;
-        }*/
         this.consolidable=this.endTime.isBefore(this.batterySlots[this.batterySlots.length-1].readTimeStamp);
     }
 
@@ -326,9 +345,11 @@ export class BalanceNeto{
         if(type="json"){
             try{
             this.duration=Duration.parse(input.duration.toString());
+            this.durationChronoUnit=input.durationChronoUnit;
             }catch(e){
                 throw new Error("Durattion cannot be settled because of "+e);
             }
+            
             this.startTime=LocalDateTime.parse(input.startTime.toString());
             this.endTime=LocalDateTime.parse(input.endTime.toString());
             this.batterySlots=[];

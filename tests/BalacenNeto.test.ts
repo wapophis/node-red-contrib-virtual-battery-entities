@@ -1,4 +1,4 @@
-import { ChronoField, Duration, LocalDateTime } from "@js-joda/core";
+import { ChronoField, ChronoUnit, Duration, LocalDateTime } from "@js-joda/core";
 import { BalanceNeto, ResultSlot } from "../src/BalanceNeto";
 import { BatterySlot } from "../src/BatterySlot";
 
@@ -17,12 +17,64 @@ describe("Testing BalanceNeto",()=>{
     test("Test duration vs starTime && endTIme",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
         for(let i=1;i<24*60;i++){
-            balaceNeto.setDuration(i);
+            balaceNeto.setDuration(i,ChronoUnit.MINUTES);
             expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
  //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
             expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
             }
     });
+
+    test("Test duration in hours vs starTime && endTIme",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        for(let i=1;i<24*30;i++){
+            balaceNeto.setDuration(i,ChronoUnit.HOURS);
+            expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
+ //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
+            expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
+            }
+    });
+
+    test("Test duration in days vs starTime && endTIme",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        for(let i=1;i<365;i++){
+            balaceNeto.setDuration(i,ChronoUnit.DAYS);
+            expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
+ //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
+            expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
+            }
+    });
+
+    test("Test duration in weeks vs starTime && endTIme",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        for(let i=1;i<56;i++){
+            balaceNeto.setDuration(i,ChronoUnit.WEEKS);
+            expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
+ //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
+            expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
+            }
+    });
+
+    test("Test duration in months vs starTime && endTIme",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        for(let i=1;i<12;i++){
+            balaceNeto.setDuration(i,ChronoUnit.MONTHS);
+            expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
+ //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
+            expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
+            }
+    });
+
+
+    test("Test duration in YEARS vs starTime && endTIme",()=>{
+        let balaceNeto=new BalanceNeto(undefined);  
+        for(let i=1;i<10;i++){
+            balaceNeto.setDuration(i,ChronoUnit.YEARS);
+            expect(Duration.between(balaceNeto.startTime,balaceNeto.endTime).toMinutes()).toBe(balaceNeto.duration.toMinutes());
+ //           console.log({duration:balaceNeto.duration.toString(),startTIme:balaceNeto.startTime.toString(),endTime:balaceNeto.endTime.toString()});
+            expect(balaceNeto.endTime.isAfter(LocalDateTime.now().withSecond(0))).toBeTruthy();
+            }
+    });
+    
     
     function getSlot():BatterySlot{
     return new BatterySlot({
@@ -139,7 +191,7 @@ describe("Testing BalanceNeto",()=>{
         balaceNeto.setSlotOffset(1);
         let startTime=LocalDateTime.now();
         let slotLength=getSlot().getLength();
-        balaceNeto.setDuration(15);
+        balaceNeto.setDuration(15,ChronoUnit.MINUTES);
 
         
             for (let i=0;i<(15*60*1000)/slotLength;i++){
@@ -171,7 +223,7 @@ describe("Testing BalanceNeto",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
         balaceNeto.setSlotOffset(0); //NO OFFSET FOR THIS TEST READTIMESTAMP IS DINAMICALLY ALTERED
         let slotLength=getSlot().getLength();
-        balaceNeto.setDuration(15);
+        balaceNeto.setDuration(15,ChronoUnit.MINUTES);
         let startTime=balaceNeto.startTime;
 
         
@@ -198,7 +250,7 @@ describe("Testing BalanceNeto",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
         balaceNeto.setSlotOffset(0);
         let slotLength=getSlot().getLength();
-        balaceNeto.setDuration(15);
+        balaceNeto.setDuration(15,ChronoUnit.MINUTES);
         let startTime=balaceNeto.startTime;
 
         
@@ -224,7 +276,7 @@ describe("Testing BalanceNeto",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
         balaceNeto.setSlotOffset(0);
         let slotLength=getSlot().getLength();
-        balaceNeto.setDuration(15);
+        balaceNeto.setDuration(15,ChronoUnit.MINUTES);
         let startTime=balaceNeto.startTime;
 
         
@@ -250,7 +302,7 @@ describe("Testing BalanceNeto",()=>{
     test("Serialization",()=>{
         let balaceNeto=new BalanceNeto(undefined);  
         balaceNeto.setSlotOffset(1);
-        balaceNeto.setDuration(15);
+        balaceNeto.setDuration(15,ChronoUnit.MINUTES);
         
         for (let i=0;i<Math.floor(Math.random() * 100);i++){
             let slot=getSlot();
@@ -263,4 +315,14 @@ describe("Testing BalanceNeto",()=>{
         expect(JSON.stringify(balaceNeto.get(), null, 2)).toBeDefined();
         
     });
+
+    test("Deserializacion",()=>{
+        let stringedBalanceNeto="{  \"balanceNeto\": {    \"duration\": \"PT15M\",    \"durationChronoUnit\": {      \"_name\": \"Minutes\",      \"_duration\": \"PT1M\"    },    \"feeded\": 49859.08194444445,    \"consumed\": 47406.8375,    \"produced\": 62906.55972222223,    \"startAt\": \"2025-02-25T00:45\",    \"endAt\": \"2025-02-25T01:00\",    \"isConsolidable\": false,    \"batterySlots\": [      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 4205139,        \"feededInWatsH\": 376974,        \"consumedInWatsH\": 4026194      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 6894765,        \"feededInWatsH\": 1726679,        \"consumedInWatsH\": 3286432      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 4695482,        \"feededInWatsH\": 5168726,        \"consumedInWatsH\": 2884192      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 9066905,        \"feededInWatsH\": 3317974,        \"consumedInWatsH\": 2788226      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 6407252,        \"feededInWatsH\": 8106588,        \"consumedInWatsH\": 2309951      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 4517264,        \"feededInWatsH\": 6182932,        \"consumedInWatsH\": 6901406      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 1847225,        \"feededInWatsH\": 7061944,        \"consumedInWatsH\": 9888487      },      {        \"readTimeStamp\": \"2025-02-25T00:48:02\",        \"length\": 5000,        \"producedInWatsH\": 7658691,        \"feededInWatsH\": 3956722,        \"consumedInWatsH\": 2048035      }    ],    \"length\": 8,    \"startTime\": \"2025-02-25T00:45\",    \"endTime\": \"2025-02-25T01:00\",    \"imported\": 0,    \"exported\": 49859.08194444445  }}";
+        let balance:BalanceNeto=new BalanceNeto(undefined);
+        
+        balance.of(JSON.parse(stringedBalanceNeto).balanceNeto,"json");
+        
+    });
 })
+
+
