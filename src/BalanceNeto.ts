@@ -317,8 +317,17 @@ export class BalanceNeto{
      * @returns energy imported from grid with divisor applied
      */
     getImportedFromGridInUnits(divisor:number):number{
-        let feeded:number=(parseFloat(this.getFeeded().toString())/divisor); 
-        return (feeded<0?feeded:0);
+        let count=0;
+        this.batterySlots.filter((batSlot:BatterySlot)=>{return batSlot.feededInWatsH<0;})
+        .forEach(function(item){
+            let slotsInHour=(60*60*1000)/item.getLength();
+            count+=item.feededInWatsH/slotsInHour;
+            if(isNaN(count)){
+                console.log(item);
+                return 0;
+            }
+        });
+        return count/divisor;
     }
     /**
      * 
@@ -326,8 +335,17 @@ export class BalanceNeto{
      * @returns energy exported to grid with divisor applied
      */
     getExportedToGridInUnits(divisor:number):number{
-        let feeded:number=(parseFloat(this.getFeeded().toString())/divisor); 
-        return (feeded>0?feeded:0);
+        let count=0;
+        this.batterySlots.filter((batSlot:BatterySlot)=>{return batSlot.feededInWatsH>0;})
+        .forEach(function(item){
+            let slotsInHour=(60*60*1000)/item.getLength();
+            count+=item.feededInWatsH/slotsInHour;
+            if(isNaN(count)){
+                console.log(item);
+                return 0;
+            }
+        });
+        return count/divisor;
     }
 
 }
