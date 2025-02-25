@@ -4,15 +4,45 @@ import { BalanceNetoHorario } from "./BalanceNetoHorario";
 import { BatteryBalanceCounter } from "./BatteryBalance";
 import { PriceIntervalItem } from "./PriceIntervalItem";
 import { PricesTables } from "./PriceTables";
+import { BalanceNeto } from "./BalanceNeto";
 
+/**
+ * 
+ * @deprecated @since 1.0.11-SNAPSHOT
+ */
 export class VirtualBatteryConfig{
-  //  wastePercent:number=0;
-    // potenciasMap:Map<Interval,PriceIntervalItem>|null=null;
     
     private pricesTablesCache:PricesTables|null;
 
     constructor(priceCache:PricesTables|null){
-    //    this.wastePercent=wastePercent;
+        this.pricesTablesCache=priceCache;
+    }
+
+    cacheIsReady(){
+        return this.pricesTablesCache!==null;
+    }
+
+    setPricesTables(priceCache:PricesTables){
+        this.pricesTablesCache=priceCache;
+    }
+
+    getPricesTables():PricesTables{
+        if(this.pricesTablesCache===null){
+            throw new IllegalArgumentException(" I have no prices tables");
+        }
+        return this.pricesTablesCache;
+    }
+    
+}
+
+/**
+ * @since 1.0.12-SNAPSHOT
+ */
+export class VirtualBatteryPricesCache{
+    private pricesTablesCache:PricesTables|null;
+
+
+    constructor(priceCache:PricesTables|null){
         this.pricesTablesCache=priceCache;
     }
 
@@ -31,33 +61,17 @@ export class VirtualBatteryConfig{
         return this.pricesTablesCache;
     }
 
-    // addTerminoPotencia(startHour:number,endHour:number,pricePerMwH:number):VirtualBatteryConfig{
-    //     if(this.potenciasMap!==null){
-    //        let startDateInterval=LocalDateTime.now().withHour(startHour).withMinute(0).withSecond(0).withNano(0);
-    //        let endDateInterval=LocalDateTime.now().withHour(endHour).withMinute(0).withSecond(0).withNano(0);
-    //        let toAddTerm:PriceIntervalItem=new PriceIntervalItem();
-    //         toAddTerm.setInterval(Interval.of(startDateInterval.atZone(ZoneId.of("Europe/Madrid")).toInstant(),endDateInterval.atZone(ZoneId.of("Europe/Madrid")).toInstant()));
-    //         toAddTerm.setPrice(pricePerMwH);
-    //         this.potenciasMap.set(toAddTerm.getInterval(),toAddTerm);
-    //     }
-    //     return this;
-    // }
-
-    // getTerminoPotencia(date:LocalDateTime):PriceIntervalItem|null{
-    //     if(this.potenciasMap!==null)
-    //         return PriceIntervalItem.searchPriceInIntervalMap(this.potenciasMap,date);
-    //     return null;
-    // }
-
-    
 }
 
 export class VirtualBattery<T extends BatteryBalanceCounter>{
-    config:VirtualBatteryConfig;
+    config:VirtualBatteryConfig; // @deprecated SINCE 1.0.11-SNAPSHOT//
+    pricesCache:VirtualBatteryPricesCache;
+
     private balance:T|null=null;
 
-    constructor(virtualBatteryConfig:VirtualBatteryConfig){
-        this.config=virtualBatteryConfig;
+    constructor(virtualBatteryPricesCache:VirtualBatteryConfig){
+        this.pricesCache=new VirtualBatteryPricesCache(virtualBatteryPricesCache.getPricesTables());
+        this.config=virtualBatteryPricesCache;
     }
 
     getBalance():T{
@@ -71,7 +85,27 @@ export class VirtualBattery<T extends BatteryBalanceCounter>{
         this.balance=balance;
     }
 
+    /**
+     * @since 1.0.12-SNAPSHOT
+     * @param balanceNeto 
+     * @returns 
+     */
+    setBalanceNeto(balanceNeto:BalanceNeto):VirtualBattery<T>{
+        this._setBalancePricesForDateTime(balanceNeto.getStartTime());
+        this.balance?.setBalanceNeto(balanceNeto);
+        return this;
+    }
 
+    _setBalancePricesForDateTime(dateTime:LocalDateTime){
+        this.getBalance().setPrices(this.pricesCache.getPricesTables().searchInBuy(dateTime),
+        this.pricesCache.getPricesTables().searchInSell(dateTime));
+    }
+
+
+    /**
+     * @deprecated @since 1.0.11-SNAPSHOT
+     * @param bnetoH 
+     */
     addBalanceNetoHorario(bnetoH:BalanceNetoHorario){
         if(!bnetoH.isConsolidable()){
             throw Error("Cannot add a non consolidable BalanceNetoHorario");
@@ -83,20 +117,11 @@ export class VirtualBattery<T extends BatteryBalanceCounter>{
         this.getBalance().setPrices(this.config.getPricesTables().searchInBuy(bnetoH.startTime),
         this.config.getPricesTables().searchInSell(bnetoH.startTime));
 
-        // this.getBalance().setTerms(this.config.getPricesTables().searchInTerminoEnergia(bnetoH.startTime),
-        // this.config.getPricesTables().searchInTerminoPotencia(bnetoH.startTime)
-        // );
-
         this.getBalance().addBalaceNeto(bnetoH);
-        // this._addPotenciaInTramo(bnetoH);
+
     }
 
-    // private _addPotenciaInTramo(bnetoH:BalanceNetoHorario){
-    //         /// TODO IMPLEMENT THIS
-    //         let terminoAplicable:PriceIntervalItem|null=this.config.getTerminoPotencia(bnetoH.startTime);
-    //         // if(terminoAplicable!==null)
-    //         //     this.getBalance().addTerminoPotenciaIncrement(terminoAplicable.getPrice());
-    // }
+
 
 
 
