@@ -258,7 +258,7 @@ describe("Testing BalanceNeto",()=>{
                 let slot=getSlot();
                 slot.readTimeStamp=startTime.plusSeconds((i*slotLength)/1000);
                 slot.consumedInWatsH=Math.floor(Math.random() * 9999999);
-                slot.feededInWatsH=Math.floor(Math.random() * 9999999);
+                slot.feededInWatsH=720;
                 slot.producedInWatsH=Math.floor(Math.random() * 9999999);
                 if(balaceNeto.isConsolidable()===false){
                     balaceNeto.addBatterySlot(slot);
@@ -266,7 +266,7 @@ describe("Testing BalanceNeto",()=>{
             }
     
         let result=0;
-        balaceNeto.getFeededInSlots(Duration.ofMinutes(5)).forEach((rslot:ResultSlot)=>{
+        balaceNeto.getFeededInSlots(Duration.ofMinutes(1)).forEach((rslot:ResultSlot)=>{
             result+=rslot.value;
         });
         expect(result.toFixed(2)).toBe(balaceNeto.getFeeded().toFixed(2));
